@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react"
 import { createClient } from "@supabase/supabase-js"
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// --- CONEXIÓN DIRECTA (FUERZA BRUTA) ---
+const supabaseUrl = "https://stenaxhdsfxrzhetetiz.supabase.co";
+const supabaseAnonKey = "sb_publishable_Sk2d6wvlqXrwLKfBEfS8fw_t5PfImJN";
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const FORMATS = ["🎬 Reels", "📸 Imagen", "📱 Historia", "✍️ Texto"];
@@ -22,23 +23,35 @@ export default function App() {
   }, []);
 
   const load = async () => {
-    const { data: cloud } = await supabase.from("metrics").select("*").order('date', { ascending: false });
-    if (cloud) setData(cloud);
+    try {
+      const { data: cloud, error } = await supabase.from("metrics").select("*").order('date', { ascending: false });
+      if (error) throw error;
+      if (cloud) setData(cloud);
+    } catch (err) {
+      console.error("Error cargando datos:", err.message);
+    }
   }
 
   useEffect(() => { if (auth) load() }, [auth]);
 
+  // --- CÁLCULOS DE INTELIGENCIA ---
   const totalRev = data.reduce((a, b) => a + Number(b.revenue), 0);
   const totalViews = data.reduce((a, b) => a + Number(b.views), 0);
   const globalRPM = totalViews > 0 ? (totalRev / totalViews) : 0.000013;
-  const healthScore = data.length > 0 ? Math.min(Math.max(50 + (data[0].revenue > (totalRev/data.length) ? 25 : -15), 0), 100) : 0;
+  const healthScore = data.length > 0 ? Math.min(Math.max(50 + (Number(data[0].revenue) > (totalRev/data.length) ? 25 : -15), 0), 100) : 0;
   const estimatedGain = simViews * globalRPM;
 
   const save = async (e) => {
     e.preventDefault();
-    await supabase.from("metrics").insert([{ ...form, views: parseFloat(form.views), revenue: parseFloat(form.revenue) }]);
-    setForm({ ...form, topic: "", views: "", revenue: "" });
-    load();
+    const { error } = await supabase.from("metrics").insert([{ 
+      ...form, 
+      views: parseFloat(form.views), 
+      revenue: parseFloat(form.revenue) 
+    }]);
+    if (!error) {
+      setForm({ ...form, topic: "", views: "", revenue: "" });
+      load();
+    }
   }
 
   const formatNum = (n) => {
@@ -53,7 +66,7 @@ export default function App() {
       <div className="bg-white p-12 rounded-[50px] shadow-2xl text-center max-w-sm w-full border-t-8 border-blue-600">
         <h2 className="text-4xl font-black text-[#003566] italic mb-8 uppercase tracking-tighter">IBIELE TV</h2>
         <input type="password" placeholder="CÓDIGO" className="w-full p-5 rounded-2xl bg-slate-50 text-center mb-6 text-2xl font-bold outline-none border-2" value={pass} onChange={(e) => setPass(e.target.value)} />
-        <button onClick={() => pass === "IBIELE2026" ? setAuth(true) : alert("ERROR")} className="w-full bg-[#003566] p-5 rounded-2xl font-black text-white uppercase tracking-widest text-xl shadow-lg">Entrar al Mando</button>
+        <button onClick={() => pass === "IBIELE2026" ? setAuth(true) : alert("ACCESO DENEGADO")} className="w-full bg-[#003566] p-5 rounded-2xl font-black text-white uppercase tracking-widest text-xl shadow-lg">Entrar al Mando</button>
       </div>
     </div>
   )
@@ -62,7 +75,7 @@ export default function App() {
     <div className="min-h-screen bg-[#f1f5f9] p-2 md:p-8 font-sans text-slate-900 border-[10px] md:border-[20px] border-[#003566]">
       <div className="max-w-6xl mx-auto">
         
-        {/* HEADER RECUPERADO */}
+        {/* HEADER */}
         <header className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
            <div className="text-center md:text-left">
               <h1 className="text-5xl md:text-7xl font-black text-[#003566] italic uppercase tracking-tighter leading-none">IBIELE TV <span className="text-blue-600">INTEL</span></h1>
@@ -81,7 +94,7 @@ export default function App() {
            </div>
         </header>
 
-        {/* 🔮 SIMULADOR "EL ORÁCULO" (ESTILO MANDO) */}
+        {/* 🔮 SIMULADOR "EL ORÁCULO" */}
         <div className="bg-[#003566] p-10 rounded-[60px] shadow-2xl text-white mb-10 text-left border-b-[12px] border-blue-900 relative overflow-hidden">
            <p className="text-xs font-black uppercase text-blue-400 mb-8 tracking-widest italic">🔮 Oráculo: Simulador de Impacto</p>
            <div className="flex flex-col lg:flex-row items-center gap-12 relative z-10">
@@ -103,7 +116,7 @@ export default function App() {
            <div className="bg-white p-8 rounded-[50px] shadow-xl border border-slate-100">
               <p className="text-xs font-black text-slate-400 uppercase mb-4 tracking-widest italic">📡 Scanner de Patrones</p>
               <div className="bg-blue-50 p-6 rounded-3xl border-l-[10px] border-blue-600 text-lg font-black italic text-[#003566]">
-                 {data.length > 0 ? `🔥 El formato ${data[0].format} está dominando tu alcance.` : "Analizando..."}
+                 {data.length > 0 ? `🔥 El formato ${data[0].format} está dominando tu alcance.` : "Sincronizando con la nube..."}
               </div>
            </div>
            <div className="bg-white p-8 rounded-[50px] shadow-xl border border-slate-100 flex flex-col justify-between">
@@ -111,11 +124,11 @@ export default function App() {
                 <p className="text-xs font-black text-slate-400 uppercase mb-2 italic">🎭 IA Script AI</p>
                 <p className="text-2xl font-black text-[#003566] italic leading-tight">"{script || 'Escribe un titular abajo...'}"</p>
               </div>
-              <button onClick={() => setScript(`¡URGENTE! Tienes que ver lo que pasó en: ${form.topic}`)} className="mt-6 bg-blue-600 text-white p-4 rounded-2xl font-black uppercase text-xs shadow-lg active:scale-95 transition-all">Generar Gancho 🚀</button>
+              <button onClick={() => setScript(`¡URGENTE! Tienes que ver lo que pasó en: ${form.topic}`)} className="mt-6 bg-blue-600 text-white p-4 rounded-2xl font-black uppercase text-xs shadow-lg">Generar Gancho 🚀</button>
            </div>
         </div>
 
-        {/* REGISTRO AGRESIVO */}
+        {/* REGISTRO */}
         <section className="bg-white p-10 rounded-[60px] shadow-2xl mb-12 border-2 border-slate-50">
           <form onSubmit={save} className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <input type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} className="p-5 rounded-2xl bg-slate-50 font-black border-2 border-slate-100 text-xl text-center" />
@@ -125,12 +138,12 @@ export default function App() {
             <input placeholder="TITULAR DE LA NOTICIA" value={form.topic} onChange={e => setForm({...form, topic: e.target.value})} className="md:col-span-2 p-5 rounded-2xl bg-slate-50 font-black border-2 border-slate-100 text-xl uppercase tracking-tighter" required />
             <input placeholder="Vistas" value={form.views} onChange={e => setForm({...form, views: e.target.value})} className="p-6 rounded-[40px] bg-slate-50 font-black text-6xl text-blue-600 text-center shadow-inner" required />
             <input placeholder="Caja $" value={form.revenue} onChange={e => setForm({...form, revenue: e.target.value})} className="p-6 rounded-[40px] bg-slate-50 font-black text-6xl text-green-600 text-center shadow-inner" required />
-            <button className="md:col-span-2 p-8 rounded-[45px] font-black uppercase text-3xl shadow-2xl transition-all bg-[#003566] text-white active:scale-95 tracking-widest italic">Sincronizar Imperio 🚀</button>
+            <button className="md:col-span-2 p-8 rounded-[45px] font-black uppercase text-3xl shadow-2xl bg-[#003566] text-white tracking-widest italic">Sincronizar Imperio 🚀</button>
           </form>
         </section>
 
-        {/* BITÁCORA DE MANDO (DISEÑO RECUPERADO) */}
-        <div className="bg-white rounded-[70px] shadow-2xl p-10 border border-slate-100 mb-10 text-left">
+        {/* BITÁCORA (NÚMEROS GIGANTES) */}
+        <div className="bg-white rounded-[70px] shadow-2xl p-10 border border-slate-100 mb-10 text-left text-sm md:text-base">
           <h2 className="text-4xl font-black text-[#003566] uppercase text-center italic tracking-widest mb-12 border-b-8 border-blue-600 pb-6">Bitácora de Mando Supremo</h2>
           <div className="space-y-8">
             {data.map(d => (
