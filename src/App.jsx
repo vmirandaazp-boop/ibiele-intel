@@ -6,18 +6,18 @@ const supabaseAnonKey = "sb_publishable_Sk2d6wvlqXrwLKfBEfS8fw_t5PfImJN";
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const FORMATS = [
-  { value: "Foto", label: "Foto", icon: "🖼️", color: "bg-blue-500" },
+  { value: "Foto", label: "Foto", icon: "📸", color: "bg-blue-500" },
   { value: "Reels", label: "Reels", icon: "🎬", color: "bg-purple-600" },
   { value: "Enlaces", label: "Enlaces", icon: "🔗", color: "bg-green-500" },
   { value: "Historias", label: "Historias", icon: "📱", color: "bg-orange-500" }
 ];
 
 const ENERO_DATA = [
-  { day: 1, date: "2026-01-01", views: 0.76, revenue: 7.85, topic: "🚫 PROHIBIDO QUEJARSE", format: "Foto", followers: 240 },
-  { day: 5, date: "2026-01-05", views: 13.07, revenue: 103.96, topic: "😭 SUSURRARON JESÚS", format: "Foto", followers: 4117 },
-  { day: 11, date: "2026-01-11", views: 9.19, revenue: 84.27, topic: "🏟️ CALIFORNIA 50K", format: "Foto", followers: 2894 },
-  { day: 25, date: "2026-01-25", views: 8.32, revenue: 70.59, topic: "🩸 PAGAN CON SANGRE", format: "Foto", followers: 2631 },
-  { day: 31, date: "2026-01-31", views: 1.83, revenue: 21.20, topic: "🇺🇸 CALIFORNIA FE", format: "Foto", followers: 669 }
+  { day: 1, date: "2026-01-01", views: 0.76, revenue: 7.85, topic: "🚫 PROHIBIDO QUEJARSE", format: "Foto" },
+  { day: 5, date: "2026-01-05", views: 13.07, revenue: 103.96, topic: "😭 SUSURRARON JESÚS", format: "Foto" },
+  { day: 11, date: "2026-01-11", views: 9.19, revenue: 84.27, topic: "🏟️ CALIFORNIA 50K", format: "Foto" },
+  { day: 25, date: "2026-01-25", views: 8.32, revenue: 70.59, topic: "🩸 PAGAN CON SANGRE", format: "Foto" },
+  { day: 31, date: "2026-01-31", views: 1.83, revenue: 21.20, topic: "🇺🇸 CALIFORNIA FE", format: "Foto" }
 ];
 
 export default function App() {
@@ -26,7 +26,6 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [editingId, setEditingId] = useState(null);
   const [time, setTime] = useState(new Date());
-  const [showInsights, setShowInsights] = useState(true);
 
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -36,9 +35,11 @@ export default function App() {
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const { data: m, error } = await supabase.from("metrics").select("*").order('date', { ascending: false });
-      if (!error) setData(m || []);
-    } catch (err) { console.error(err); } finally { setLoading(false); }
+      const { data: metrics, error } = await supabase.from("metrics").select("*").order('date', { ascending: false });
+      if (error) throw error;
+      setData(metrics || []);
+    } catch (err) { console.error(err); } 
+    finally { setLoading(false); }
   }, []);
 
   useEffect(() => { 
@@ -58,15 +59,16 @@ export default function App() {
       topic: formData.topic.toUpperCase()
     };
 
-    if (editingId) {
-      await supabase.from("metrics").update(payload).eq('id', editingId);
-      setEditingId(null);
-    } else {
-      await supabase.from("metrics").insert([payload]);
-    }
-    
-    setFormData({ date: new Date().toISOString().split('T')[0], revenue: "", views: "", interactions: "", followers: "", format: "Foto", topic: "" });
-    loadData();
+    try {
+      if (editingId) {
+        await supabase.from("metrics").update(payload).eq('id', editingId);
+        setEditingId(null);
+      } else {
+        await supabase.from("metrics").insert([payload]);
+      }
+      setFormData({ date: new Date().toISOString().split('T')[0], revenue: "", views: "", interactions: "", followers: "", format: "Foto", topic: "" });
+      loadData();
+    } catch (err) { alert("Error en Supabase"); }
   };
 
   const handleEdit = (item) => {
@@ -75,7 +77,7 @@ export default function App() {
       date: item.date,
       revenue: item.revenue.toString(),
       views: (item.views / 1000000).toString(),
-      interactions: (item.interactions / 1000).toString() || "",
+      interactions: (item.interactions / 1000).toString(),
       followers: (item.followers || 0).toString(),
       format: item.format,
       topic: item.topic
@@ -91,39 +93,31 @@ export default function App() {
     }
   };
 
-  // --- VARIABLES REPARADAS ---
+  // --- VARIABLES DE CÁLCULO ---
   const febData = data.filter(item => item.date.includes("-02-"));
   const totalRevenue = febData.reduce((sum, item) => sum + (Number(item.revenue) || 0), 0);
-  const totalViews = febData.reduce((sum, item) => sum + (Number(item.views) || 0), 0);
   const dailyTarget = (1250 - totalRevenue) / (28 - new Date().getDate() || 1);
-  const conversionRate = 315;
-  const bestDay = ENERO_DATA.reduce((max, item) => item.revenue > max.revenue ? item : max);
-  const eneroRevenue = 1104.32;
-  const eneroViews = 112.9;
-  const eneroFollowers = 35420;
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-slate-900">
       
-      {/* HEADER ORIGINAL DE QWEN */}
+      {/* HEADER ORIGINAL QWEN */}
       <header className="bg-[#003566] text-white p-4 shadow-2xl sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
-          <div className="text-center md:text-left w-full md:w-auto">
-            <h1 className="text-2xl md:text-4xl font-black italic tracking-tighter uppercase">IBIELE <span className="text-slate-400">INTEL</span></h1>
-            <p className="text-[8px] md:text-[10px] font-bold tracking-widest opacity-70 uppercase mt-1">
-              {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • HQ AGUASCALIENTES
-            </p>
+          <div className="text-center md:text-left">
+            <h1 className="text-2xl md:text-4xl font-black italic uppercase">IBIELE <span className="text-blue-400">INTEL</span></h1>
+            <p className="text-[8px] md:text-[10px] font-bold opacity-70 uppercase">{time.toLocaleTimeString()} • COMANDO</p>
           </div>
-          <div className="w-full md:w-auto overflow-x-auto pb-2 md:pb-0 no-scrollbar">
-            <div className="flex gap-1 md:gap-2 min-w-max md:min-w-0">
+          <div className="w-full md:w-auto overflow-x-auto no-scrollbar flex justify-center">
+            <div className="flex bg-white/5 p-1 rounded-xl">
               {["dashboard", "audiencia", "estrategia", "historico"].map(tab => (
-                <button key={tab} onClick={() => setActiveTab(tab)} className={`px-3 md:px-4 py-2 rounded-lg md:rounded-xl font-black text-[10px] md:text-xs whitespace-nowrap transition ${activeTab === tab ? "bg-white text-[#003566]" : "bg-[#002a55] text-blue-200"}`}>{tab.toUpperCase()}</button>
+                <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2 rounded-lg font-black text-[10px] uppercase transition ${activeTab === tab ? "bg-white text-[#003566] shadow-lg" : "text-blue-200"}`}>{tab}</button>
               ))}
             </div>
           </div>
-          <div className="text-center md:text-right w-full md:w-auto mt-2 md:mt-0">
-            <p className="text-[8px] md:text-[10px] font-black opacity-50 uppercase">Revenue Feb</p>
-            <p className="text-xl md:text-3xl font-black text-green-400">${totalRevenue.toFixed(2)}</p>
+          <div className="text-center md:text-right">
+            <p className="text-[8px] md:text-[10px] font-black opacity-50 uppercase">Feb Rev</p>
+            <p className="text-xl md:text-2xl font-black text-green-400">${totalRevenue.toFixed(2)}</p>
           </div>
         </div>
       </header>
@@ -133,47 +127,47 @@ export default function App() {
         {activeTab === "dashboard" && (
           <div className="animate-in fade-in duration-500 space-y-6">
             
-            {/* COMPARATIVA MESES (REPARADA) */}
+            {/* COMPARATIVA DE MESES: COLORES ELEGANTES */}
             <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               {/* ENERO: GRIS ELEGANTE */}
-               <div className="bg-slate-500 p-4 md:p-8 rounded-xl md:rounded-[40px] text-white border-2 border-slate-400 opacity-90 shadow-2xl">
-                  <h2 className="text-lg md:text-2xl font-black uppercase mb-4">ENERO <span className="text-slate-200">HISTÓRICO</span></h2>
-                  <div className="grid grid-cols-2 gap-2 text-center">
-                    <div className="bg-white/10 p-3 rounded-xl border border-white/10"><p className="text-[7px] md:text-[10px] opacity-60 uppercase">Ingresos</p><p className="text-xl md:text-4xl font-black text-slate-100">$1,104.32</p></div>
-                    <div className="bg-white/10 p-3 rounded-xl border border-white/10"><p className="text-[7px] md:text-[10px] opacity-60 uppercase">Vistas</p><p className="text-xl md:text-4xl font-black text-slate-100">112.9M</p></div>
+               {/* ENERO: GRIS/PIZARRA */}
+               <div className="bg-slate-600 p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-slate-800 shadow-xl">
+                  <h2 className="text-sm font-black uppercase opacity-60 mb-2 italic">Enero Histórico</h2>
+                  <div className="flex justify-between items-end">
+                    <div><p className="text-4xl font-black italic">$1,104.32</p><p className="text-[8px] font-bold uppercase">112.9M Vistas</p></div>
+                    <div className="text-[10px] font-black bg-white/10 px-3 py-1 rounded-full border border-white/10">ARCHIVO</div>
                   </div>
                </div>
                {/* FEBRERO: AZUL IMPERIAL */}
-               <div className="bg-[#003566] p-4 md:p-8 rounded-xl md:rounded-[40px] text-white border-2 border-blue-400 shadow-2xl">
-                  <h2 className="text-lg md:text-2xl font-black uppercase mb-4">FEBRERO <span className="text-blue-300">ACTUAL</span></h2>
-                  <div className="grid grid-cols-2 gap-2 text-center">
-                    <div className="bg-white/10 p-3 rounded-xl border border-white/10"><p className="text-[7px] md:text-[10px] opacity-60 uppercase">Caja</p><p className="text-xl md:text-4xl font-black">${totalRevenue.toFixed(2)}</p></div>
-                    <div className="bg-white/10 p-3 rounded-xl border border-white/10"><p className="text-[7px] md:text-[10px] opacity-60 uppercase">Target</p><p className="text-xl md:text-4xl font-black text-yellow-300">${dailyTarget.toFixed(2)}</p></div>
+               <div className="bg-[#003566] p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-blue-900 shadow-xl">
+                  <h2 className="text-sm font-black uppercase opacity-60 mb-2 italic">Febrero Actual</h2>
+                  <div className="flex justify-between items-end">
+                    <div><p className="text-4xl font-black italic text-blue-400">${totalRevenue.toFixed(2)}</p><p className="text-[8px] font-bold uppercase">Meta: $1,250</p></div>
+                    <div className="text-[10px] font-black bg-blue-500 px-3 py-1 rounded-full border border-blue-400 animate-pulse">VIVO</div>
                   </div>
                </div>
             </section>
 
-            {/* FORMULARIO ORIGINAL (FUNCIONANDO) */}
-            <section className={`p-4 md:p-8 rounded-xl md:rounded-[40px] shadow-xl border-4 ${editingId ? 'bg-blue-50 border-blue-500' : 'bg-white border-slate-300'}`}>
-              <h3 className="text-xs font-black text-[#003566] mb-4 border-b-2 pb-2 uppercase">{editingId ? "⚡ Editando Registro" : "📝 Registro Actividad"}</h3>
+            {/* FORMULARIO */}
+            <section className={`p-4 md:p-8 rounded-xl md:rounded-[40px] shadow-xl border-4 ${editingId ? 'bg-blue-50 border-blue-600' : 'bg-white border-slate-300'}`}>
+              <h3 className="text-xs font-black text-[#003566] uppercase mb-4 border-b-2 pb-2 italic">{editingId ? "⚡ Editando" : "📝 Registro"}</h3>
               <form onSubmit={saveData} className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <input type="date" value={formData.date} onChange={e=>setFormData({...formData, date:e.target.value})} className="p-2 md:p-4 rounded-xl border-2 font-bold" required/>
                 <input placeholder="Vistas (M)" type="number" step="0.01" value={formData.views} onChange={e=>setFormData({...formData, views:e.target.value})} className="p-2 md:p-4 rounded-xl border-2 font-bold" required/>
                 <input placeholder="Caja ($)" type="number" step="0.01" value={formData.revenue} onChange={e=>setFormData({...formData, revenue:e.target.value})} className="p-2 md:p-4 rounded-xl border-2 font-black text-green-700 bg-green-50" required/>
                 <input placeholder="TITULAR" value={formData.topic} onChange={e=>setFormData({...formData, topic:e.target.value})} className="md:col-span-2 p-2 md:p-4 rounded-xl border-2 font-bold uppercase" required/>
                 <select value={formData.format} onChange={e=>setFormData({...formData, format:e.target.value})} className="p-2 md:p-4 rounded-xl border-2 font-bold">{FORMATS.map(f => <option key={f.value} value={f.value}>{f.icon} {f.label}</option>)}</select>
-                <button type="submit" className="md:col-span-3 bg-[#003566] text-white p-3 md:p-6 rounded-xl md:rounded-[35px] font-black text-base md:text-2xl shadow-xl italic uppercase tracking-tighter">{editingId ? "Actualizar" : "Sincronizar"} 🚀</button>
+                <button type="submit" className="md:col-span-3 bg-[#003566] text-white p-3 md:p-6 rounded-xl md:rounded-[35px] font-black text-base md:text-2xl shadow-xl italic uppercase">Sincronizar 🚀</button>
               </form>
             </section>
 
-            {/* BITÁCORA ORIGINAL */}
+            {/* BITÁCORA FEBRERO */}
             <section className="bg-white rounded-xl md:rounded-[40px] p-4 md:p-8 border-2 border-slate-300 shadow-xl overflow-x-auto no-scrollbar">
-              <h2 className="text-xl md:text-3xl font-black text-[#003566] uppercase italic mb-4">Bitácora Febrero</h2>
+              <h2 className="text-xl md:text-3xl font-black text-[#003566] uppercase italic mb-4">Operaciones Febrero</h2>
               <div className="min-w-[500px] space-y-2">
                 {febData.map(item => (
-                  <div key={item.id} onClick={() => handleEdit(item)} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-200 hover:bg-blue-50 cursor-pointer">
-                    <div className="flex-1"><p className="font-black text-[#003566] text-sm md:text-base uppercase truncate pr-4">{item.topic}</p><p className="text-[8px] md:text-[10px] font-bold text-slate-400">{(item.views/1000000).toFixed(2)}M VISTAS</p></div>
-                    <div className="flex items-center gap-6"><p className="font-black text-green-600 text-xl md:text-3xl">${Number(item.revenue).toFixed(2)}</p><button onClick={(e)=>{e.stopPropagation(); deleteRow(item.id);}} className="text-red-400 text-xl">🗑️</button></div>
+                  <div key={item.id} onClick={() => handleEdit(item)} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-200 hover:bg-blue-50 cursor-pointer transition-all">
+                    <div className="flex-1"><p className="font-black text-[#003566] text-sm md:text-base uppercase truncate pr-4">{item.topic}</p><p className="text-[8px] md:text-[10px] font-bold text-slate-400 uppercase">{item.date.split("-").reverse().join("/")} • {(item.views/1000000).toFixed(2)}M Vistas</p></div>
+                    <div className="flex items-center gap-6"><p className="font-black text-green-600 text-xl md:text-3xl">${Number(item.revenue).toFixed(2)}</p><button onClick={(e)=>{e.stopPropagation(); deleteRow(item.id);}} className="text-red-300 hover:text-red-600 text-xl transition-colors">🗑️</button></div>
                   </div>
                 ))}
               </div>
@@ -181,12 +175,11 @@ export default function App() {
           </div>
         )}
 
-        {/* OTROS TABS (REPARADOS) */}
         {activeTab === "historico" && (
           <section className="bg-white rounded-xl md:rounded-[40px] p-4 md:p-8 border-2 border-slate-300 overflow-x-auto animate-in fade-in">
              <h2 className="text-xl md:text-3xl font-black text-slate-400 uppercase italic mb-4">Archivo Enero 2026</h2>
              <table className="w-full text-left min-w-[500px]">
-                <thead className="bg-slate-100 text-[10px] font-black uppercase text-slate-500"><tr><th className="p-3">Fecha</th><th className="p-3">Titular</th><th className="p-3">Caja</th><th className="p-3">Alcance</th></tr></thead>
+                <thead className="bg-slate-100 text-[10px] font-black uppercase text-slate-500"><tr><th className="p-3">Día</th><th className="p-3">Titular</th><th className="p-3">Caja</th><th className="p-3">Alcance</th></tr></thead>
                 <tbody className="divide-y-2">
                   {ENERO_DATA.map(i => (
                     <tr key={i.day} className="grayscale opacity-60"><td className="p-3 font-bold">0{i.day}/01</td><td className="p-3 font-black uppercase truncate max-w-[150px]">{i.topic}</td><td className="p-3 font-black text-slate-600">${i.revenue.toFixed(2)}</td><td className="p-3 font-black">{i.views}M</td></tr>
