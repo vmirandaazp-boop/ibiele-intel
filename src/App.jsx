@@ -94,10 +94,18 @@ export default function App() {
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const {  metrics, error } = await supabase.from("metrics").select("*").order('date', { ascending: false });
+      const {  metrics, error } = await supabase
+        .from("metrics")
+        .select("*")
+        .order('date', { ascending: false });
+      
       if (error) throw error;
       setData(metrics || []);
-    } catch (err) { console.error(err); } finally { setLoading(false); }
+    } catch (err) {
+      console.error("Error cargando métricas:", err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => { loadData(); }, [loadData]);
@@ -194,11 +202,6 @@ export default function App() {
     if (n >= 1000000) return `${(n/1000000).toFixed(1)}M`;
     if (n >= 1000) return `${(n/1000).toFixed(1)}K`;
     return n.toLocaleString();
-  };
-
-  // Función segura para formatear números
-  const safeNumber = (num) => {
-    return (num || 0).toLocaleString();
   };
 
   return (
