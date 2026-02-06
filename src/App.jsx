@@ -94,7 +94,7 @@ export default function App() {
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const { data: metrics, error } = await supabase.from("metrics").select("*").order('date', { ascending: false });
+      const {  metrics, error } = await supabase.from("metrics").select("*").order('date', { ascending: false });
       if (error) throw error;
       setData(metrics || []);
     } catch (err) { console.error(err); } finally { setLoading(false); }
@@ -146,12 +146,12 @@ export default function App() {
     setEditingId(item.id);
     setFormData({ 
       date: item.date, 
-      revenue: item.revenue.toString(), 
-      views: (item.views/1000000).toString(), 
-      interactions: (item.interactions/1000).toString(), 
-      followers: item.followers.toString(), 
-      format: item.format, 
-      topic: item.topic 
+      revenue: item.revenue?.toString() || "", 
+      views: item.views ? (item.views/1000000).toString() : "", 
+      interactions: item.interactions ? (item.interactions/1000).toString() : "", 
+      followers: item.followers?.toString() || "", 
+      format: item.format || "Foto", 
+      topic: item.topic || "" 
     });
     setActiveTab("dashboard");
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -172,6 +172,7 @@ export default function App() {
   // --- CÁLCULOS ---
   const totalRevenue = filteredData.reduce((sum, item) => sum + (Number(item.revenue) || 0), 0);
   const totalViews = filteredData.reduce((sum, item) => sum + (Number(item.views) || 0), 0);
+  const totalFollowersFeb = filteredData.reduce((sum, item) => sum + (Number(item.followers) || 0), 0);
   const daysInMonth = 29;
   const daysPassed = new Date().getDate();
   const daysLeft = daysInMonth - daysPassed;
@@ -193,6 +194,11 @@ export default function App() {
     if (n >= 1000000) return `${(n/1000000).toFixed(1)}M`;
     if (n >= 1000) return `${(n/1000).toFixed(1)}K`;
     return n.toLocaleString();
+  };
+
+  // Función segura para formatear números
+  const safeNumber = (num) => {
+    return (num || 0).toLocaleString();
   };
 
   return (
@@ -506,11 +512,11 @@ export default function App() {
                     <div className="flex-1 mb-3 md:mb-0">
                       <p className="font-black text-sm md:text-base text-[#003566] uppercase truncate" title={item.topic}>{item.topic}</p>
                       <p className="text-[8px] md:text-[10px] font-bold text-slate-400 uppercase mt-1">
-                        {item.date.split("-").reverse().slice(0,2).join("/")} • {(item.views/1000000).toFixed(2)}M vistas • +{item.followers.toLocaleString()} seguidores
+                        {item.date.split("-").reverse().slice(0,2).join("/")} • {(item.views/1000000).toFixed(2)}M vistas • +{(item.followers || 0).toLocaleString()} seguidores
                       </p>
                     </div>
                     <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
-                      <p className="font-black text-xl md:text-2xl text-green-600">${Number(item.revenue).toFixed(2)}</p>
+                      <p className="font-black text-xl md:text-2xl text-green-600">${Number(item.revenue || 0).toFixed(2)}</p>
                       <div className="flex items-center gap-2">
                         <button 
                           onClick={(e) => { e.stopPropagation(); handleEdit(item); }} 
@@ -734,7 +740,7 @@ export default function App() {
                           <td className="p-2 md:p-4 font-bold text-[8px] md:text-sm text-[#003566] whitespace-nowrap">{item.format}</td>
                           <td className="p-2 md:p-4 font-black text-[10px] md:text-base text-blue-600 whitespace-nowrap">{item.views}M</td>
                           <td className="p-2 md:p-4 font-black text-[10px] md:text-base text-green-600 whitespace-nowrap">${item.revenue.toFixed(2)}</td>
-                          <td className="p-2 md:p-4 font-black text-[10px] md:text-base text-blue-600 whitespace-nowrap">+{item.followers}</td>
+                          <td className="p-2 md:p-4 font-black text-[10px] md:text-base text-blue-600 whitespace-nowrap">+{item.followers || 0}</td>
                         </tr>
                       ))}
                     </tbody>
