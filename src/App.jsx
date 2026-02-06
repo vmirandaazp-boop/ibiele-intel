@@ -1,12 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-// Configuración de Supabase
+// --- CONFIGURACIÓN DE PODER ---
 const supabaseUrl = "https://stenaxhdsfxrzhetetiz.supabase.co";
 const supabaseAnonKey = "sb_publishable_Sk2d6wvlqXrwLKfBEfS8fw_t5PfImJN";
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Definición de formatos
 const FORMATS = [
   { value: "Foto", label: "Foto", icon: "🖼️" },
   { value: "Reels", label: "Reels", icon: "🎬" },
@@ -14,30 +13,30 @@ const FORMATS = [
   { value: "Historias", label: "Historias", icon: "📱" }
 ];
 
-// Componente principal
 export default function App() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [time, setTime] = useState(new Date());
+  const [activeTab, setActiveTab] = useState("febrero");
+  
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     revenue: "",
     views: "",
     interactions: "",
     followers: "",
-    format: "Foto"
+    format: "Reels",
+    topic: ""
   });
-  const [activeTab, setActiveTab] = useState("febrero");
-  const [time, setTime] = useState(new Date());
-  const [location, setLocation] = useState("Aguascalientes, MX");
 
-  // Actualizar reloj
+  // Reloj en tiempo real
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // Cargar datos
+  // Carga de Inteligencia
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
@@ -49,299 +48,173 @@ export default function App() {
       if (error) throw error;
       setData(metrics || []);
     } catch (err) {
-      setError("Error al cargar los datos");
+      setError("Fallo en conexión con la base de datos");
       console.error(err);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Guardar datos
+  useEffect(() => { loadData(); }, [loadData]);
+
+  // Sincronización con Supabase
   const saveData = async (e) => {
     e.preventDefault();
     try {
       const { error } = await supabase.from("metrics").insert([{
         date: formData.date,
-        revenue: parseFloat(formData.revenue),
-        views: parseFloat(formData.views),
-        interactions: parseFloat(formData.interactions),
-        followers: parseFloat(formData.followers),
-        format: formData.format
+        revenue: parseFloat(formData.revenue) || 0,
+        views: (parseFloat(formData.views) || 0) * 1000000, // Convertimos M a unidades
+        interactions: (parseFloat(formData.interactions) || 0) * 1000, // Convertimos K a unidades
+        followers: parseFloat(formData.followers) || 0,
+        format: formData.format,
+        topic: formData.topic.toUpperCase()
       }]);
       
       if (error) throw error;
       
-      // Limpiar formulario
-      setFormData({
-        ...formData,
-        revenue: "",
-        views: "",
-        interactions: "",
-        followers: ""
-      });
-      
-      // Recargar datos
+      setFormData({ ...formData, revenue: "", views: "", interactions: "", followers: "", topic: "" });
       await loadData();
     } catch (err) {
-      setError("Error al guardar los datos");
-      console.error(err);
+      setError("Error al sincronizar datos");
     }
   };
 
-  // Cargar datos al iniciar
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  // Calcular métricas
-  const totalRevenue = data.reduce((sum, item) => sum + (item.revenue || 0), 0);
-  const totalViews = data.reduce((sum, item) => sum + (item.views || 0), 0);
+  // Cálculos de Mando
+  const totalRevenue = data.reduce((sum, item) => sum + (Number(item.revenue) || 0), 0);
+  const totalViews = data.reduce((sum, item) => sum + (Number(item.views) || 0), 0);
   const avgRevenue = data.length > 0 ? totalRevenue / data.length : 0;
-  const topPerformers = [...data]
-    .sort((a, b) => b.revenue - a.revenue)
-    .slice(0, 3);
+  const topPerformers = [...data].sort((a, b) => b.revenue - a.revenue).slice(0, 3);
 
-  // Formatear números
-  const formatNumber = (num, decimals = 2) => {
-    if (num >= 1000000) return `${(num/1000000).toFixed(decimals)}M`;
-    if (num >= 1000) return `${(num/1000).toFixed(decimals)}K`;
-    return num.toFixed(decimals);
+  const formatNumber = (num) => {
+    const n = Number(num) || 0;
+    if (n >= 1000000) return `${(n/1000000).toFixed(2)}M`;
+    if (n >= 1000) return `${(n/1000).toFixed(1)}K`;
+    return n.toLocaleString();
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
-      {/* Header superior */}
-      <header className="bg-gradient-to-r from-indigo-600 to-purple-700 text-white p-4 shadow-lg">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 border-[10px] border-[#4f46e5]">
+      {/* HEADER ESTRATÉGICO */}
+      <header className="bg-gradient-to-r from-indigo-700 to-purple-800 text-white p-6 shadow-2xl">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">IBIELE TV INTEL</h1>
-            <p className="text-sm opacity-90 flex items-center mt-1">
-              <span className="inline-block w-2 h-2 bg-yellow-300 rounded-full mr-2"></span>
-              {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • 
-              <span className="ml-2">MANDO ESTRATÉGICO</span>
+            <h1 className="text-4xl font-black italic tracking-tighter uppercase">IBIELE TV <span className="text-indigo-300">INTEL</span></h1>
+            <p className="text-xs font-bold opacity-80 mt-1 flex items-center">
+              <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
+              SISTEMA VIVO • {time.toLocaleTimeString()} • AGUASCALIENTES, MX
             </p>
           </div>
-          
-          <div className="flex items-center space-x-4">
-            <button className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg font-medium hover:bg-white/30 transition">
-              {location}
-            </button>
-            <button className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg font-medium transition">
-              REPORTE
-            </button>
+          <div className="bg-white/10 p-4 rounded-2xl border border-white/20 text-center">
+             <p className="text-[10px] font-black uppercase opacity-60">Revenue Total</p>
+             <p className="text-2xl font-black text-green-400">${totalRevenue.toFixed(2)}</p>
           </div>
         </div>
       </header>
 
-      {/* Contenido principal */}
-      <main className="max-w-7xl mx-auto p-4 md:p-6">
-        {/* Sección de registro */}
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <div className="lg:col-span-2 bg-white rounded-2xl shadow-md p-6 border border-gray-100">
-            <div className="flex items-center mb-5">
-              <span className="text-2xl mr-2">📝</span>
-              <h2 className="text-xl font-bold text-indigo-700">REGISTRAR ACTIVIDAD</h2>
-            </div>
+      <main className="max-w-7xl mx-auto p-4 md:p-8 space-y-8">
+        
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* REGISTRO DE ACTIVIDAD */}
+          <div className="lg:col-span-2 bg-white rounded-[40px] shadow-xl p-8 border border-slate-100">
+            <h2 className="text-2xl font-black text-indigo-700 mb-6 flex items-center gap-3 italic">
+              <span className="bg-indigo-100 p-2 rounded-xl">📝</span> REGISTRAR OPERACIÓN
+            </h2>
             
-            <form onSubmit={saveData} className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1">
-                    FECHA DE OPERACIÓN
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.date}
-                    onChange={(e) => setFormData({...formData, date: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
+            <form onSubmit={saveData} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-400 uppercase ml-2">Fecha de Operación</label>
+                  <input type="date" value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})} className="w-full p-4 rounded-2xl bg-slate-50 border-2 border-slate-100 font-bold focus:border-indigo-500 outline-none" />
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1">
-                    MILLONES DE VISTAS (FEB)
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="Ej: 2.5"
-                    value={formData.views}
-                    onChange={(e) => setFormData({...formData, views: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    step="0.1"
-                  />
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-400 uppercase ml-2">Vistas (Millones)</label>
+                  <input type="number" step="0.01" placeholder="Ej: 2.5" value={formData.views} onChange={(e) => setFormData({...formData, views: e.target.value})} className="w-full p-4 rounded-2xl bg-slate-50 border-2 border-slate-100 font-bold outline-none" />
                 </div>
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">
-                  DÓLARES GENERADOS
-                </label>
-                <input
-                  type="number"
-                  placeholder="0.00"
-                  value={formData.revenue}
-                  onChange={(e) => setFormData({...formData, revenue: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  step="0.01"
-                />
+              <div className="space-y-2">
+                <label className="text-xs font-black text-slate-400 uppercase ml-2">Titular o Tema</label>
+                <input placeholder="NOMBRE DEL CONTENIDO / NOTICIA" value={formData.topic} onChange={(e) => setFormData({...formData, topic: e.target.value})} className="w-full p-4 rounded-2xl bg-slate-50 border-2 border-slate-100 font-bold uppercase outline-none" />
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1">
-                    INTERACCIONES (K)
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="45.0"
-                    value={formData.interactions}
-                    onChange={(e) => setFormData({...formData, interactions: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-400 uppercase ml-2">Caja (USD)</label>
+                  <input type="number" step="0.01" placeholder="0.00" value={formData.revenue} onChange={(e) => setFormData({...formData, revenue: e.target.value})} className="w-full p-4 rounded-2xl bg-green-50 border-2 border-green-100 font-black text-green-700 outline-none" />
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1">
-                    NUEVOS SEGUIDORES
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="468"
-                    value={formData.followers}
-                    onChange={(e) => setFormData({...formData, followers: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-400 uppercase ml-2">Interacciones (K)</label>
+                  <input type="number" placeholder="Ej: 45" value={formData.interactions} onChange={(e) => setFormData({...formData, interactions: e.target.value})} className="w-full p-4 rounded-2xl bg-slate-50 border-2 border-slate-100 font-bold outline-none" />
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1">
-                    FORMATO
-                  </label>
-                  <select
-                    value={formData.format}
-                    onChange={(e) => setFormData({...formData, format: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  >
-                    {FORMATS.map(format => (
-                      <option key={format.value} value={format.value}>
-                        {format.icon} {format.label}
-                      </option>
-                    ))}
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-400 uppercase ml-2">Formato</label>
+                  <select value={formData.format} onChange={(e) => setFormData({...formData, format: e.target.value})} className="w-full p-4 rounded-2xl bg-slate-50 border-2 border-slate-100 font-bold outline-none">
+                    {FORMATS.map(f => <option key={f.value} value={f.value}>{f.icon} {f.label}</option>)}
                   </select>
                 </div>
               </div>
               
-              <button
-                type="submit"
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-xl transition duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
-              >
+              <button type="submit" className="w-full bg-indigo-600 p-6 rounded-[30px] text-white font-black text-2xl shadow-2xl hover:bg-indigo-700 active:scale-95 transition-all italic">
                 SINCRONIZAR DATOS 📊
               </button>
             </form>
           </div>
-          
-          {/* Sección de insights */}
-          <div className="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
-            <div className="flex items-center mb-5">
-              <span className="text-2xl mr-2">💡</span>
-              <h2 className="text-xl font-bold text-indigo-700">ORÁCULO ESTRATÉGICO</h2>
-            </div>
-            
-            <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-5 mb-5">
-              <p className="font-medium">
-                <span className="text-indigo-600">ESTRATEGIA:</span> Usa el formato 'Breaking News'. Las noticias rinden 42% más.
-              </p>
-            </div>
-            
-            <div className="bg-purple-50 border border-purple-100 rounded-xl p-5">
-              <p className="font-medium">
-                <span className="text-purple-600">COMPARATIVA HISTÓRICA:</span> 
-                <br />
-                <span className="text-2xl font-bold">"Mataron a mi hijo"</span>
-                <br />
-                Rendimiento: <span className="font-bold">0.7M Vistas</span>
-              </p>
+
+          {/* ORÁCULO ESTRATÉGICO */}
+          <div className="space-y-6">
+            <div className="bg-white rounded-[40px] shadow-xl p-8 border border-slate-100 h-full">
+              <h2 className="text-xl font-black text-indigo-700 mb-6 flex items-center gap-3 italic">
+                <span className="bg-yellow-100 p-2 rounded-xl">💡</span> ORÁCULO
+              </h2>
+              <div className="space-y-6">
+                <div className="bg-indigo-50 p-6 rounded-3xl border-l-8 border-indigo-600">
+                  <p className="text-xs font-black text-indigo-600 uppercase mb-2">Estrategia sugerida</p>
+                  <p className="font-bold italic">"Usa el formato 'Breaking News'. Las noticias rinden 42% más hoy."</p>
+                </div>
+                <div className="bg-purple-50 p-6 rounded-3xl border-l-8 border-purple-600">
+                  <p className="text-xs font-black text-purple-600 uppercase mb-2">Referencia Histórica</p>
+                  <p className="text-2xl font-black text-slate-800 leading-tight">"MATARON A MI HIJO"</p>
+                  <p className="font-bold text-purple-700 mt-2">Rendimiento: 0.7M Vistas</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Sección de bitácora */}
-        <section className="bg-white rounded-2xl shadow-md p-6 border border-gray-100 mb-8">
-          <div className="flex justify-between items-center mb-5">
-            <div className="flex items-center">
-              <span className="text-2xl mr-2">📈</span>
-              <h2 className="text-xl font-bold text-indigo-700">BITÁCORA DE CRECIMIENTO</h2>
-            </div>
-            
-            <div className="flex space-x-2">
-              <button
-                onClick={() => setActiveTab("febrero")}
-                className={`px-4 py-2 rounded-lg font-medium ${
-                  activeTab === "febrero"
-                    ? "bg-indigo-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                Febrero 2026
-              </button>
-              <button
-                onClick={() => setActiveTab("enero")}
-                className={`px-4 py-2 rounded-lg font-medium ${
-                  activeTab === "enero"
-                    ? "bg-indigo-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                Enero 2026
-              </button>
+        {/* BITÁCORA DE CRECIMIENTO */}
+        <section className="bg-white rounded-[50px] shadow-2xl p-8 border border-slate-100 overflow-hidden">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+            <h2 className="text-3xl font-black text-indigo-700 italic uppercase tracking-tighter">Bitácora de Crecimiento</h2>
+            <div className="bg-slate-100 p-2 rounded-2xl flex gap-2">
+              <button onClick={() => setActiveTab("febrero")} className={`px-6 py-2 rounded-xl font-black transition ${activeTab === "febrero" ? "bg-indigo-600 text-white shadow-lg" : "text-slate-500 hover:bg-slate-200"}`}>FEBRERO 2026</button>
+              <button onClick={() => setActiveTab("enero")} className={`px-6 py-2 rounded-xl font-black transition ${activeTab === "enero" ? "bg-indigo-600 text-white shadow-lg" : "text-slate-500 hover:bg-slate-200"}`}>ENERO 2026</button>
             </div>
           </div>
-          
+
           {loading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Cargando métricas...</p>
-            </div>
-          ) : error ? (
-            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
-              <p className="text-red-700">{error}</p>
-            </div>
-          ) : data.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">No hay datos registrados aún</p>
-              <p className="text-gray-400 mt-2">Registra tu primera métrica para comenzar</p>
-            </div>
+            <div className="text-center py-20 animate-pulse text-indigo-600 font-black">ANALIZANDO DATOS...</div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="w-full text-left">
                 <thead>
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">FECHA</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ALCANCE FEB</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CAJA USD</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">EVALUACIÓN</th>
+                  <tr className="border-b-4 border-indigo-50">
+                    <th className="p-4 text-xs font-black text-slate-400 uppercase">Fecha</th>
+                    <th className="p-4 text-xs font-black text-slate-400 uppercase">Tema / Titular</th>
+                    <th className="p-4 text-xs font-black text-slate-400 uppercase">Alcance</th>
+                    <th className="p-4 text-xs font-black text-slate-400 uppercase">Caja USD</th>
+                    <th className="p-4 text-xs font-black text-slate-400 uppercase text-center">Evaluación</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-slate-100">
                   {data.map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {new Date(item.date).toLocaleDateString('es-ES', {
-                          year: 'numeric',
-                          month: '2-digit',
-                          day: '2-digit'
-                        })}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-indigo-600 font-bold">
-                        {formatNumber(item.views)}M
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-bold">
-                        ${item.revenue.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
-                          SUPERÓ ALCANCE
-                        </span>
+                    <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="p-5 font-bold text-slate-400">{new Date(item.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}</td>
+                      <td className="p-5 font-black text-indigo-900 italic uppercase">{item.topic || "CONTENIDO SIN TÍTULO"}</td>
+                      <td className="p-5 font-black text-indigo-600">{formatNumber(item.views)}</td>
+                      <td className="p-5 font-black text-green-600 text-2xl">${(Number(item.revenue) || 0).toFixed(2)}</td>
+                      <td className="p-5 text-center">
+                        <span className="bg-green-100 text-green-700 px-4 py-1 rounded-full text-[10px] font-black uppercase">Firme 🔥</span>
                       </td>
                     </tr>
                   ))}
@@ -351,97 +224,54 @@ export default function App() {
           )}
         </section>
 
-        {/* Sección de métricas clave */}
-        <section className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 p-6 rounded-2xl border border-indigo-100">
-            <p className="text-sm font-medium text-indigo-600 mb-1">INGRESOS TOTALES</p>
-            <p className="text-3xl font-bold text-indigo-800">${totalRevenue.toFixed(2)}</p>
-            <p className="text-xs text-gray-500 mt-1">Meta Febrero: $1,250.00</p>
-          </div>
-          
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-2xl border border-purple-100">
-            <p className="text-sm font-medium text-purple-600 mb-1">VISUALIZACIONES</p>
-            <p className="text-3xl font-bold text-purple-800">{formatNumber(totalViews)}M</p>
-            <p className="text-xs text-gray-500 mt-1">+12.3% vs Promedio</p>
-          </div>
-          
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl border border-blue-100">
-            <p className="text-sm font-medium text-blue-600 mb-1">INTERACCIONES</p>
-            <p className="text-3xl font-bold text-blue-800">{formatNumber(data.reduce((sum, item) => sum + (item.interactions || 0), 0))}K</p>
-            <p className="text-xs text-gray-500 mt-1">Tasa: 1.52%</p>
-          </div>
-          
-          <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-2xl border border-green-100">
-            <p className="text-sm font-medium text-green-600 mb-1">NUEVOS SEGUIDORES</p>
-            <p className="text-3xl font-bold text-green-800">+{formatNumber(data.reduce((sum, item) => sum + (item.followers || 0), 0))}</p>
-            <p className="text-xs text-gray-500 mt-1">Crecimiento: 38%</p>
-          </div>
+        {/* MÉTRICAS CLAVE */}
+        <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
+           {[
+             { label: "INGRESOS TOTALES", value: `$${totalRevenue.toFixed(2)}`, color: "indigo", sub: "Meta Feb: $1,250" },
+             { label: "VISTAS TOTALES", value: formatNumber(totalViews), color: "purple", sub: "+12.3% vs Promedio" },
+             { label: "INTERACCIONES", value: formatNumber(data.reduce((s, i) => s + (i.interactions || 0), 0)), color: "blue", sub: "Tasa: 1.52%" },
+             { label: "NUEVOS SEGUIDORES", value: `+${formatNumber(data.reduce((s, i) => s + (i.followers || 0), 0))}`, color: "green", sub: "Crecimiento: 38%" }
+           ].map((card, i) => (
+             <div key={i} className={`bg-white p-6 rounded-[35px] border-b-8 border-${card.color}-600 shadow-xl`}>
+               <p className={`text-[10px] font-black text-${card.color}-600 uppercase mb-2 tracking-widest`}>{card.label}</p>
+               <p className="text-3xl font-black text-slate-800">{card.value}</p>
+               <p className="text-[10px] font-bold text-slate-400 mt-2">{card.sub}</p>
+             </div>
+           ))}
         </section>
 
-        {/* Sección de proyección */}
-        <section className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-2xl p-6 mb-8">
-          <h2 className="text-xl font-bold mb-4">PROYECCIÓN PARA SUPERAR ENERO</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-white/10 p-4 rounded-xl">
-              <p className="text-sm opacity-80">Meta Diaria Recomendada</p>
-              <p className="text-3xl font-bold mt-1">$38.72</p>
-            </div>
-            <div className="bg-white/10 p-4 rounded-xl">
-              <p className="text-sm opacity-80">Ingresos Enero</p>
-              <p className="text-lg mt-1">${totalRevenue.toFixed(2)} (31 días)</p>
-            </div>
-            <div className="bg-white/10 p-4 rounded-xl">
-              <p className="text-sm opacity-80">Promedio Diario</p>
-              <p className="text-lg mt-1">${avgRevenue.toFixed(2)} por día</p>
-            </div>
-            <div className="bg-white/10 p-4 rounded-xl">
-              <p className="text-sm opacity-80">Días Restantes</p>
-              <p className="text-lg mt-1">27 días</p>
-            </div>
+        {/* PROYECCIÓN */}
+        <section className="bg-[#10b981] p-8 rounded-[50px] shadow-2xl text-white">
+          <h2 className="text-2xl font-black italic uppercase tracking-tighter mb-8 border-b border-white/20 pb-4 text-center">Proyección Estratégica</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+             <div className="text-center">
+               <p className="text-[10px] font-black opacity-70 uppercase mb-1">Meta Diaria</p>
+               <p className="text-4xl font-black italic tracking-tighter">$38.72</p>
+             </div>
+             <div className="text-center">
+               <p className="text-[10px] font-black opacity-70 uppercase mb-1">Promedio Real</p>
+               <p className="text-4xl font-black italic tracking-tighter">${avgRevenue.toFixed(2)}</p>
+             </div>
+             <div className="text-center">
+               <p className="text-[10px] font-black opacity-70 uppercase mb-1">Días Restantes</p>
+               <p className="text-4xl font-black italic tracking-tighter">27</p>
+             </div>
+             <div className="text-center">
+               <p className="text-[10px] font-black opacity-70 uppercase mb-1">Rendimiento</p>
+               <p className="text-4xl font-black italic tracking-tighter">Óptimo</p>
+             </div>
           </div>
-          
-          <div className="bg-white/10 p-5 rounded-xl">
-            <h3 className="text-lg font-bold mb-3">FORMATOS DEL MEJOR CONTENIDO - ENERO 2026</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {FORMATS.map((format, index) => (
-                <div key={index} className="bg-white/5 p-4 rounded-lg text-center">
-                  <div className="text-3xl mb-2">{format.icon}</div>
-                  <p className="font-medium">{format.label}</p>
-                  <p className="text-sm opacity-80 mt-1">{formatNumber([1.37, 49.7, 3.6, 1.3][index])}M</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Sección de top performers */}
-        <section className="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
-          <h2 className="text-xl font-bold text-indigo-700 mb-5">DÍAS CON MAYOR RENDIMIENTO - ENERO 2026</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {topPerformers.map((item, index) => (
-              <div key={index} className="bg-ind50 border border-indigo-100 rounded-xl p-5">
-                <p className="font-bold text-indigo-700">TOP {index + 1}: {new Date(item.date).toLocaleDateString('es-ES', {
-                  weekday: 'long',
-                  day: 'numeric',
-                  month: 'short'
-                })}</p>
-                <p className="mt-2"><span className="font-medium">${item.revenue.toFixed(2)}</span> en ingresos</p>
-                <p className="mt-1">{formatNumber(item.views)} visualizaciones</p>
-                <p className="mt-1">{formatNumber(item.interactions)}K interacciones</p>
-                <p className="mt-2 text-sm opacity-80">Contenido: "{item.topic || 'Contenido destacado'}"</p>
-              </div>
-            ))}
-          </div>
-          
-          <div className="bg-purple-50 border border-purple-100 rounded-xl p-5">
-            <h3 className="font-bold text-purple-700 mb-2">PATRÓN DETECTADO</h3>
-            <p className="text-sm">
-              Los <span className="font-medium">Domingos</span> son tus días de mayor rendimiento con un promedio de <span className="font-medium">${avgRevenue.toFixed(2)}</span> en ingresos. 
-              El contenido relacionado con <span className="font-medium">"Mártires"</span>, <span className="font-medium">"Estadio Lleno"</span> y testimonios de fe funciona excepcionalmente bien. 
-              <span className="font-medium">Recomendación:</span> Programa tu contenido más importante para Domingos entre 12:00-14:00.
-            </p>
+          <div className="bg-white/10 p-6 rounded-[35px] border border-white/20">
+             <h3 className="text-center text-xs font-black uppercase mb-6 tracking-widest italic">Rendimiento por Formato (Enero 2026)</h3>
+             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {FORMATS.map(f => (
+                  <div key={f.value} className="text-center bg-white/5 p-4 rounded-3xl">
+                    <div className="text-4xl mb-2">{f.icon}</div>
+                    <p className="text-xs font-black uppercase">{f.label}</p>
+                    <p className="text-2xl font-black italic mt-1">1.4M</p>
+                  </div>
+                ))}
+             </div>
           </div>
         </section>
       </main>
