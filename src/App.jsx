@@ -18,14 +18,51 @@ const FORMATS = [
   { value: "Historias", label: "Historias", icon: "📱" }
 ];
 
-// Datos históricos de enero 2026
+// DATOS REALES DE ENERO 2026 (31 días completos)
 const ENERO_DATA = [
-  { id: "ene-1", day: 1, date: "2026-01-01", views: 0.76, revenue: 7.85, topic: "🚫 PROHIBIDO QUEJARSE", followers: 240, format: "Foto" },
-  { id: "ene-5", day: 5, date: "2026-01-05", views: 13.07, revenue: 103.96, topic: "😭 SUSURRARON JESÚS", followers: 4117, format: "Reels" },
-  { id: "ene-11", day: 11, date: "2026-01-11", views: 9.19, revenue: 84.27, topic: "🏟️ CALIFORNIA 50K", followers: 2894, format: "Foto" },
-  { id: "ene-25", day: 25, date: "2026-01-25", views: 8.32, revenue: 70.59, topic: "🩸 PAGAN CON SANGRE", followers: 2631, format: "Reels" },
-  { id: "ene-31", day: 31, date: "2026-01-31", views: 1.83, revenue: 21.20, topic: "🇺🇸 CALIFORNIA FE", followers: 669, format: "Foto" }
+  { id: "ene-01", day: 1, date: "2026-01-01", views: 0.76, revenue: 7.85, interactions: 12.8, followers: 167, espectadores: 0.44, visitas: 943, topic: "🚫 PROHIBIDO QUEJARSE", format: "Foto" },
+  { id: "ene-02", day: 2, date: "2026-01-02", views: 0.78, revenue: 8.04, interactions: 13.1, followers: 225, espectadores: 0.46, visitas: 1365, topic: "CONTENIDO DÍA 2", format: "Foto" },
+  { id: "ene-03", day: 3, date: "2026-01-03", views: 2.01, revenue: 20.83, interactions: 20.0, followers: 559, espectadores: 1.10, visitas: 2448, topic: "CONTENIDO DÍA 3", format: "Reels" },
+  { id: "ene-04", day: 4, date: "2026-01-04", views: 0.78, revenue: 12.80, interactions: 10.1, followers: 182, espectadores: 0.47, visitas: 913, topic: "CONTENIDO DÍA 4", format: "Foto" },
+  { id: "ene-05", day: 5, date: "2026-01-05", views: 13.07, revenue: 103.96, interactions: 131.3, followers: 3081, espectadores: 8.02, visitas: 11049, topic: "😭 SUSURRARON JESÚS", format: "Reels" },
+  { id: "ene-06", day: 6, date: "2026-01-06", views: 6.24, revenue: 51.84, interactions: 81.2, followers: 1691, espectadores: 3.64, visitas: 6589, topic: "CONTENIDO DÍA 6", format: "Foto" },
+  { id: "ene-07", day: 7, date: "2026-01-07", views: 5.30, revenue: 44.32, interactions: 59.2, followers: 1225, espectadores: 2.86, visitas: 5737, topic: "CONTENIDO DÍA 7", format: "Foto" },
+  { id: "ene-08", day: 8, date: "2026-01-08", views: 6.86, revenue: 61.68, interactions: 70.1, followers: 1591, espectadores: 3.83, visitas: 8745, topic: "CONTENIDO DÍA 8", format: "Foto" },
+  { id: "ene-09", day: 9, date: "2026-01-09", views: 4.32, revenue: 45.48, interactions: 62.1, followers: 1448, espectadores: 2.50, visitas: 5889, topic: "CONTENIDO DÍA 9", format: "Foto" },
+  { id: "ene-10", day: 10, date: "2026-01-10", views: 5.30, revenue: 37.98, interactions: 59.7, followers: 971, espectadores: 2.78, visitas: 5094, topic: "CONTENIDO DÍA 10", format: "Foto" },
+  { id: "ene-11", day: 11, date: "2026-01-11", views: 9.19, revenue: 84.27, interactions: 84.2, followers: 1969, espectadores: 5.42, visitas: 8543, topic: "🏟️ CALIFORNIA 50K", format: "Reels" },
+  { id: "ene-12", day: 12, date: "2026-01-12", views: 3.22, revenue: 31.96, interactions: 33.3, followers: 737, espectadores: 1.82, visitas: 3375, topic: "CONTENIDO DÍA 12", format: "Foto" },
+  { id: "ene-13", day: 13, date: "2026-01-13", views: 2.02, revenue: 22.29, interactions: 22.7, followers: 438, espectadores: 1.12, visitas: 2446, topic: "CONTENIDO DÍA 13", format: "Foto" },
+  { id: "ene-14", day: 14, date: "2026-01-14", views: 2.06, revenue: 21.54, interactions: 34.6, followers: 453, espectadores: 1.15, visitas: 2290, topic: "CONTENIDO DÍA 14", format: "Foto" },
+  { id: "ene-15", day: 15, date: "2026-01-15", views: 2.68, revenue: 23.74, interactions: 36.6, followers: 657, espectadores: 1.50, visitas: 2925, topic: "CONTENIDO DÍA 15", format: "Foto" },
+  { id: "ene-16", day: 16, date: "2026-01-16", views: 0.93, revenue: 8.16, interactions: 12.3, followers: 178, espectadores: 0.49, visitas: 1511, topic: "CONTENIDO DÍA 16", format: "Foto" },
+  { id: "ene-17", day: 17, date: "2026-01-17", views: 7.51, revenue: 60.45, interactions: 123.3, followers: 2193, espectadores: 4.63, visitas: 7144, topic: "CONTENIDO DÍA 17", format: "Reels" },
+  { id: "ene-18", day: 18, date: "2026-01-18", views: 2.93, revenue: 25.13, interactions: 49.4, followers: 740, espectadores: 1.67, visitas: 3636, topic: "CONTENIDO DÍA 18", format: "Foto" },
+  { id: "ene-19", day: 19, date: "2026-01-19", views: 4.59, revenue: 43.14, interactions: 82.3, followers: 1526, espectadores: 2.82, visitas: 6016, topic: "CONTENIDO DÍA 19", format: "Foto" },
+  { id: "ene-20", day: 20, date: "2026-01-20", views: 4.53, revenue: 46.21, interactions: 79.8, followers: 1380, espectadores: 2.60, visitas: 5252, topic: "CONTENIDO DÍA 20", format: "Foto" },
+  { id: "ene-21", day: 21, date: "2026-01-21", views: 2.13, revenue: 16.41, interactions: 33.2, followers: 465, espectadores: 1.20, visitas: 2442, topic: "CONTENIDO DÍA 21", format: "Foto" },
+  { id: "ene-22", day: 22, date: "2026-01-22", views: 1.08, revenue: 9.99, interactions: 21.6, followers: 252, espectadores: 0.62, visitas: 1721, topic: "CONTENIDO DÍA 22", format: "Foto" },
+  { id: "ene-23", day: 23, date: "2026-01-23", views: 1.09, revenue: 12.67, interactions: 25.4, followers: 301, espectadores: 0.67, visitas: 1509, topic: "CONTENIDO DÍA 23", format: "Foto" },
+  { id: "ene-24", day: 24, date: "2026-01-24", views: 2.02, revenue: 21.03, interactions: 38.8, followers: 470, espectadores: 1.12, visitas: 2315, topic: "CONTENIDO DÍA 24", format: "Foto" },
+  { id: "ene-25", day: 25, date: "2026-01-25", views: 8.32, revenue: 70.59, interactions: 74.7, followers: 1200, espectadores: 5.12, visitas: 7911, topic: "🩸 PAGAN CON SANGRE", format: "Reels" },
+  { id: "ene-26", day: 26, date: "2026-01-26", views: 4.76, revenue: 41.61, interactions: 45.9, followers: 717, espectadores: 2.73, visitas: 5091, topic: "CONTENIDO DÍA 26", format: "Foto" },
+  { id: "ene-27", day: 27, date: "2026-01-27", views: 3.05, revenue: 27.50, interactions: 29.7, followers: 424, espectadores: 1.70, visitas: 3188, topic: "CONTENIDO DÍA 27", format: "Foto" },
+  { id: "ene-28", day: 28, date: "2026-01-28", views: 1.56, revenue: 14.83, interactions: 16.5, followers: 231, espectadores: 0.89, visitas: 1846, topic: "CONTENIDO DÍA 28", format: "Foto" },
+  { id: "ene-29", day: 29, date: "2026-01-29", views: 1.19, revenue: 10.86, interactions: 13.0, followers: 215, espectadores: 0.66, visitas: 1982, topic: "CONTENIDO DÍA 29", format: "Foto" },
+  { id: "ene-30", day: 30, date: "2026-01-30", views: 0.95, revenue: 11.47, interactions: 11.2, followers: 186, espectadores: 0.53, visitas: 1440, topic: "CONTENIDO DÍA 30", format: "Foto" },
+  { id: "ene-31", day: 31, date: "2026-01-31", views: 1.83, revenue: 21.20, interactions: 32.4, followers: 257, espectadores: 1.10, visitas: 1759, topic: "🇺🇸 CALIFORNIA FE", format: "Foto" }
 ];
+
+// Estadísticas agregadas de enero
+const ENERO_STATS = {
+  totalRevenue: 1019.82,
+  totalViews: 113.06, // en millones
+  totalInteractions: 1442.3, // en miles
+  totalFollowers: 2193, // máximo alcanzado
+  avgDailyRevenue: 32.90,
+  bestDay: { day: 5, revenue: 103.96, topic: "😭 SUSURRARON JESÚS" },
+  worstDay: { day: 1, revenue: 7.85, topic: "🚫 PROHIBIDO QUEJARSE" }
+};
 
 export default function App() {
   const [data, setData] = useState([]);
@@ -39,7 +76,7 @@ export default function App() {
   // Estados para búsqueda por fecha
   const [searchDate, setSearchDate] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [searchMonth, setSearchMonth] = useState("febrero"); // 'enero' o 'febrero'
+  const [searchMonth, setSearchMonth] = useState("febrero");
 
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -80,7 +117,6 @@ export default function App() {
     return () => clearInterval(timer);
   }, [loadData]);
 
-  // Validación de formulario
   const validateForm = useCallback(() => {
     const errors = {};
     
@@ -141,7 +177,6 @@ export default function App() {
         if (insertError) throw insertError;
       }
       
-      // Resetear formulario
       setFormData({
         date: new Date().toISOString().split('T')[0],
         revenue: "",
@@ -211,7 +246,6 @@ export default function App() {
     }
   };
 
-  // Función de búsqueda por fecha
   const handleSearch = useCallback(() => {
     if (!searchDate) {
       setSearchResults([]);
@@ -221,23 +255,19 @@ export default function App() {
     let results = [];
     
     if (searchMonth === "enero") {
-      // Buscar en datos hardcodeados de enero
       results = ENERO_DATA.filter(item => item.date === searchDate);
     } else {
-      // Buscar en datos de Supabase (febrero)
       results = data.filter(item => item.date === searchDate);
     }
     
     setSearchResults(results);
   }, [searchDate, searchMonth, data]);
 
-  // Limpiar búsqueda cuando cambia el mes
   useEffect(() => {
     setSearchResults([]);
     setSearchDate("");
   }, [searchMonth]);
 
-  // Cálculos memoizados
   const { febData, totalRevenue, dailyTarget, progressPercent } = useMemo(() => {
     const currentYear = new Date().getFullYear();
     const febPrefix = `${currentYear}-02-`;
@@ -302,7 +332,6 @@ export default function App() {
       </header>
 
       <main className="max-w-7xl mx-auto p-3 md:p-6 space-y-6">
-        {/* Mensaje de error global */}
         {error && (
           <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded animate-pulse">
             <p className="font-bold">⚠️ Error del Sistema</p>
@@ -320,15 +349,18 @@ export default function App() {
         {activeTab === "dashboard" && (
           <div className="animate-in fade-in duration-500 space-y-6">
             <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               {/* ENERO: GRIS/PIZARRA ELEGANTE */}
+               {/* ENERO: DATOS REALES COMPLETOS */}
                <div className="bg-slate-500 p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-slate-700 shadow-xl opacity-90">
-                  <h2 className="text-sm font-black uppercase opacity-60 mb-2 italic">Enero Histórico</h2>
+                  <h2 className="text-sm font-black uppercase opacity-60 mb-2 italic">Enero 2026 - Archivo Completo</h2>
                   <div className="flex justify-between items-end">
                     <div>
-                      <p className="text-4xl font-black italic">$1,104.32</p>
-                      <p className="text-[8px] font-bold uppercase tracking-widest">Cierre de Archivo</p>
+                      <p className="text-4xl font-black italic">${ENERO_STATS.totalRevenue.toFixed(2)}</p>
+                      <p className="text-[8px] font-bold uppercase tracking-widest">31 días • {ENERO_STATS.totalViews}M views</p>
                     </div>
-                    <div className="text-[10px] font-black bg-white/10 px-3 py-1 rounded-full">LECTURA</div>
+                    <div className="text-right">
+                      <p className="text-[10px] font-black bg-white/10 px-3 py-1 rounded-full mb-1">PROM: ${ENERO_STATS.avgDailyRevenue}/día</p>
+                      <p className="text-[8px] opacity-70">Mejor: Día {ENERO_STATS.bestDay.day} (${ENERO_STATS.bestDay.revenue})</p>
+                    </div>
                   </div>
                </div>
                
@@ -555,7 +587,7 @@ export default function App() {
                     className="w-full p-3 rounded-xl border-2 font-bold border-slate-200"
                   >
                     <option value="febrero">📅 Febrero 2026 (Activo)</option>
-                    <option value="enero">📅 Enero 2026 (Histórico)</option>
+                    <option value="enero">📅 Enero 2026 (31 días)</option>
                   </select>
                 </div>
                 
@@ -591,24 +623,27 @@ export default function App() {
                       key={item.id} 
                       className={`p-4 rounded-2xl border-2 ${
                         searchMonth === "enero" 
-                          ? "bg-slate-100 border-slate-300 grayscale opacity-80" 
+                          ? "bg-slate-100 border-slate-300" 
                           : "bg-blue-50 border-blue-200"
                       }`}
                     >
                       <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-black text-[#003566] text-lg uppercase">
+                        <div className="flex-1">
+                          <p className="font-black text-[#003566] text-lg uppercase mb-2">
                             {item.topic}
                           </p>
-                          <div className="flex gap-4 mt-2 text-[10px] font-bold text-slate-500 uppercase">
-                            <span>📅 {item.date}</span>
-                            <span>👁️ {item.views}M vistas</span>
-                            <span>💰 ${item.revenue}</span>
-                            <span>📝 {item.format}</span>
-                            {item.followers && <span>👥 {item.followers} followers</span>}
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-[10px] font-bold text-slate-600">
+                            <span className="bg-white px-2 py-1 rounded">📅 {item.date}</span>
+                            <span className="bg-white px-2 py-1 rounded">👁️ {item.views}M views</span>
+                            <span className="bg-white px-2 py-1 rounded">💰 ${item.revenue}</span>
+                            <span className="bg-white px-2 py-1 rounded">📝 {item.format}</span>
+                            {item.interactions && <span className="bg-white px-2 py-1 rounded">👍 {item.interactions}K interac.</span>}
+                            {item.followers && <span className="bg-white px-2 py-1 rounded">👥 {item.followers} followers</span>}
+                            {item.espectadores && <span className="bg-white px-2 py-1 rounded">📺 {item.espectadores}M espect.</span>}
+                            {item.visitas && <span className="bg-white px-2 py-1 rounded">🏠 {item.visitas} visitas</span>}
                           </div>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right ml-4">
                           <p className="text-3xl font-black text-green-600">
                             ${Number(item.revenue).toFixed(2)}
                           </p>
@@ -652,7 +687,7 @@ export default function App() {
                       setSearchDate(item.date);
                       setSearchResults([item]);
                     }}
-                    className={`px-4 py-2 rounded-xl font-bold text-xs uppercase transition ${
+                    className={`px-3 py-2 rounded-xl font-bold text-xs uppercase transition ${
                       searchDate === item.date
                         ? "bg-[#003566] text-white"
                         : "bg-slate-100 text-slate-600 hover:bg-blue-100"
@@ -667,46 +702,76 @@ export default function App() {
           </div>
         )}
 
-        {/* HISTÓRICO ENERO */}
+        {/* HISTÓRICO ENERO - DATOS COMPLETOS */}
         {activeTab === "historico" && (
-          <section className="bg-white rounded-xl md:rounded-[40px] p-4 md:p-8 border-2 border-slate-300 overflow-x-auto">
-             <h2 className="text-xl md:text-2xl font-black text-slate-400 uppercase italic mb-6">
-               Archivo Enero 2026
-             </h2>
-             <table className="w-full text-left min-w-[500px]">
+          <div className="space-y-6">
+            {/* Resumen de enero */}
+            <section className="bg-slate-500 p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-slate-700 shadow-xl">
+              <h2 className="text-2xl font-black uppercase italic mb-4">Resumen Enero 2026</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white/10 p-4 rounded-xl">
+                  <p className="text-[10px] uppercase opacity-70">Total Ingresos</p>
+                  <p className="text-2xl font-black">${ENERO_STATS.totalRevenue.toFixed(2)}</p>
+                </div>
+                <div className="bg-white/10 p-4 rounded-xl">
+                  <p className="text-[10px] uppercase opacity-70">Visualizaciones</p>
+                  <p className="text-2xl font-black">{ENERO_STATS.totalViews}M</p>
+                </div>
+                <div className="bg-white/10 p-4 rounded-xl">
+                  <p className="text-[10px] uppercase opacity-70">Promedio Diario</p>
+                  <p className="text-2xl font-black">${ENERO_STATS.avgDailyRevenue}</p>
+                </div>
+                <div className="bg-white/10 p-4 rounded-xl">
+                  <p className="text-[10px] uppercase opacity-70">Mejor Día</p>
+                  <p className="text-2xl font-black">Día {ENERO_STATS.bestDay.day}</p>
+                  <p className="text-[10px]">${ENERO_STATS.bestDay.revenue}</p>
+                </div>
+              </div>
+            </section>
+
+            {/* Tabla completa de enero */}
+            <section className="bg-white rounded-xl md:rounded-[40px] p-4 md:p-8 border-2 border-slate-300 overflow-x-auto">
+              <h2 className="text-xl md:text-2xl font-black text-slate-400 uppercase italic mb-6">
+                Archivo Completo - Enero 2026 (31 días)
+              </h2>
+              <table className="w-full text-left min-w-[600px]">
                 <thead className="bg-slate-100 text-[10px] font-black uppercase text-slate-500">
                   <tr>
                     <th className="p-3">Día</th>
-                    <th className="p-3">Formato</th>
+                    <th className="p-3">Fecha</th>
                     <th className="p-3">Titular</th>
+                    <th className="p-3 text-right">Views</th>
                     <th className="p-3 text-right">Caja</th>
-                    <th className="p-3 text-right">Alcance</th>
+                    <th className="p-3 text-right">Interac.</th>
+                    <th className="p-3 text-right">Followers</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y-2">
                   {ENERO_DATA.map(i => (
-                    <tr key={i.id} className="grayscale opacity-60 hover:opacity-80 transition-opacity">
-                      <td className="p-3 font-bold">0{i.day}/01</td>
-                      <td className="p-3 text-xs">{i.format}</td>
-                      <td className="p-3 font-black uppercase truncate max-w-[200px]">{i.topic}</td>
-                      <td className="p-3 font-black text-slate-600 text-right">${i.revenue.toFixed(2)}</td>
-                      <td className="p-3 font-black text-right">{i.views}M</td>
+                    <tr key={i.id} className="grayscale opacity-70 hover:opacity-100 transition-opacity">
+                      <td className="p-3 font-bold">{i.day}</td>
+                      <td className="p-3 text-xs">{i.date}</td>
+                      <td className="p-3 font-black uppercase text-xs max-w-[200px] truncate">{i.topic}</td>
+                      <td className="p-3 text-right font-bold">{i.views}M</td>
+                      <td className="p-3 text-right font-black text-green-600">${i.revenue.toFixed(2)}</td>
+                      <td className="p-3 text-right text-xs">{i.interactions}K</td>
+                      <td className="p-3 text-right text-xs">{i.followers}</td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot className="bg-slate-200 font-black text-xs uppercase">
                   <tr>
-                    <td className="p-3" colSpan="3">Total Enero</td>
-                    <td className="p-3 text-right text-green-700">
-                      ${ENERO_DATA.reduce((sum, i) => sum + i.revenue, 0).toFixed(2)}
+                    <td className="p-3" colSpan="4">TOTAL ENERO</td>
+                    <td className="p-3 text-right text-green-700 text-lg">
+                      ${ENERO_STATS.totalRevenue.toFixed(2)}
                     </td>
-                    <td className="p-3 text-right">
-                      {ENERO_DATA.reduce((sum, i) => sum + i.views, 0).toFixed(2)}M
-                    </td>
+                    <td className="p-3 text-right">{ENERO_STATS.totalInteractions}K</td>
+                    <td className="p-3 text-right">Max: {ENERO_STATS.totalFollowers}</td>
                   </tr>
                 </tfoot>
-             </table>
-          </section>
+              </table>
+            </section>
+          </div>
         )}
       </main>
     </div>
