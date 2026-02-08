@@ -18,6 +18,13 @@ const FORMATS = [
   { value: "Historias", label: "Historias", icon: "📱" }
 ];
 
+// Unidades para visualizaciones
+const VIEW_UNITS = [
+  { value: 1, label: "Unidades (1)", suffix: "", multiplier: 1 },
+  { value: 1000, label: "Miles (K)", suffix: "K", multiplier: 1000 },
+  { value: 1000000, label: "Millones (M)", suffix: "M", multiplier: 1000000 }
+];
+
 // DATOS REALES DE ENERO 2026 (31 días completos)
 const ENERO_DATA = [
   { id: "ene-01", day: 1, date: "2026-01-01", views: 0.76, revenue: 7.85, interactions: 12.8, followers: 167, espectadores: 0.44, visitas: 943, topic: "🚫 PROHIBIDO QUEJARSE", format: "Foto" },
@@ -53,12 +60,11 @@ const ENERO_DATA = [
   { id: "ene-31", day: 31, date: "2026-01-31", views: 1.83, revenue: 21.20, interactions: 32.4, followers: 257, espectadores: 1.10, visitas: 1759, topic: "🇺🇸 CALIFORNIA FE", format: "Foto" }
 ];
 
-// Estadísticas agregadas de enero
 const ENERO_STATS = {
   totalRevenue: 1019.82,
-  totalViews: 113.06, // en millones
-  totalInteractions: 1442.3, // en miles
-  totalFollowers: 2193, // máximo alcanzado
+  totalViews: 113.06,
+  totalInteractions: 1442.3,
+  totalFollowers: 2193,
   avgDailyRevenue: 32.90,
   bestDay: { day: 5, revenue: 103.96, topic: "😭 SUSURRARON JESÚS" },
   worstDay: { day: 1, revenue: 7.85, topic: "🚫 PROHIBIDO QUEJARSE" }
@@ -78,10 +84,14 @@ export default function App() {
   const [searchResults, setSearchResults] = useState([]);
   const [searchMonth, setSearchMonth] = useState("febrero");
 
+  // Estados para unidades de visualización
+  const [viewUnit, setViewUnit] = useState(1000000); // Por defecto en millones
+  const [viewInput, setViewInput] = useState(""); // Valor que el usuario escribe
+
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     revenue: "",
-    views: "",
+    views: "", // Siempre se guarda en unidades base (número completo)
     interactions: "",
     followers: "",
     format: "Foto",
@@ -117,6 +127,18 @@ export default function App() {
     return () => clearInterval(timer);
   }, [loadData]);
 
+  // Convertir valor de entrada a unidades base según la unidad seleccionada
+  const convertToBase = (value, unit) => {
+    const num = parseFloat(value) || 0;
+    return num * unit;
+  };
+
+  // Convertir unidades base a valor de entrada según la unidad seleccionada
+  const convertFromBase = (baseValue, unit) => {
+    if (!baseValue) return "";
+    return (baseValue / unit).toString();
+  };
+
   const validateForm = useCallback(() => {
     const errors = {};
     
@@ -129,7 +151,7 @@ export default function App() {
       errors.revenue = "Ingresa un número positivo";
     }
     
-    const views = parseFloat(formData.views);
+    const views = parseFloat(viewInput);
     if (isNaN(views) || views < 0) {
       errors.views = "Ingresa un número positivo";
     }
@@ -140,7 +162,7 @@ export default function App() {
     
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
-  }, [formData]);
+  }, [formData, viewInput]);
 
   const saveData = async (e) => {
     e.preventDefault();
@@ -150,10 +172,13 @@ export default function App() {
     setIsSubmitting(true);
     setError(null);
 
+    // Convertir visualizaciones a unidades base antes de guardar
+    const viewsInBase = convertToBase(viewInput, viewUnit);
+
     const payload = {
       date: formData.date,
       revenue: parseFloat(formData.revenue),
-      views: parseFloat(formData.views) * 1000000,
+      views: viewsInBase,
       interactions: (parseFloat(formData.interactions) || 0) * 1000,
       followers: parseFloat(formData.followers) || 0,
       format: formData.format,
@@ -177,6 +202,7 @@ export default function App() {
         if (insertError) throw insertError;
       }
       
+      // Resetear formulario
       setFormData({
         date: new Date().toISOString().split('T')[0],
         revenue: "",
@@ -186,6 +212,8 @@ export default function App() {
         format: "Foto",
         topic: ""
       });
+      setViewInput("");
+      setViewUnit(1000000); // Volver a millones por defecto
       setFormErrors({});
       
       await loadData();
@@ -199,10 +227,27 @@ export default function App() {
 
   const handleEdit = (item) => {
     setEditingId(item.id);
+    
+    // Determinar la mejor unidad para mostrar el valor
+    const views = item.views || 0;
+    let bestUnit = 1000000; // Default millones
+    let displayValue = views / 1000000;
+    
+    if (views < 1000) {
+      bestUnit = 1;
+      displayValue = views;
+    } else if (views < 1000000) {
+      bestUnit = 1000;
+      displayValue = views / 1000;
+    }
+    
+    setViewUnit(bestUnit);
+    setViewInput(displayValue.toString());
+    
     setFormData({
       date: item.date,
       revenue: item.revenue?.toString() || "",
-      views: item.views ? (item.views / 1000000).toString() : "",
+      views: views.toString(), // Guardamos el valor base
       interactions: item.interactions ? (item.interactions / 1000).toString() : "",
       followers: item.followers?.toString() || "",
       format: item.format || "Foto",
@@ -224,6 +269,8 @@ export default function App() {
       format: "Foto",
       topic: ""
     });
+    setViewInput("");
+    setViewUnit(1000000);
     setFormErrors({});
   };
 
@@ -289,6 +336,14 @@ export default function App() {
     };
   }, [data]);
 
+  // Función para formatear visualizaciones en la tabla
+  const formatViews = (views) => {
+    if (!views) return "0";
+    if (views >= 1000000) return `${(views / 1000000).toFixed(2)}M`;
+    if (views >= 1000) return `${(views / 1000).toFixed(1)}K`;
+    return views.toString();
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-slate-900 border-[8px] md:border-[15px] border-[#003566]">
       <header className="bg-[#003566] text-white p-4 shadow-2xl sticky top-0 z-50">
@@ -349,7 +404,6 @@ export default function App() {
         {activeTab === "dashboard" && (
           <div className="animate-in fade-in duration-500 space-y-6">
             <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               {/* ENERO: DATOS REALES COMPLETOS */}
                <div className="bg-slate-500 p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-slate-700 shadow-xl opacity-90">
                   <h2 className="text-sm font-black uppercase opacity-60 mb-2 italic">Enero 2026 - Archivo Completo</h2>
                   <div className="flex justify-between items-end">
@@ -364,7 +418,6 @@ export default function App() {
                   </div>
                </div>
                
-               {/* FEBRERO: AZUL IMPERIAL VIVO */}
                <div className="bg-[#003566] p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-blue-900 shadow-xl relative overflow-hidden">
                   <div 
                     className="absolute bottom-0 left-0 h-1 bg-green-400 transition-all duration-500"
@@ -388,7 +441,7 @@ export default function App() {
                </div>
             </section>
 
-            {/* FORMULARIO */}
+            {/* FORMULARIO CON SELECTOR DE UNIDADES */}
             <section className={`p-4 md:p-8 rounded-xl md:rounded-[40px] shadow-xl border-4 transition-colors ${
               editingId ? 'bg-blue-50 border-blue-500' : 'bg-white border-slate-300'
             }`}>
@@ -421,21 +474,41 @@ export default function App() {
                   {formErrors.date && <p className="text-[10px] text-red-500 font-bold">{formErrors.date}</p>}
                 </div>
                 
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">Vistas (Millones)</label>
-                  <input 
-                    placeholder="Ej: 1.5" 
-                    type="number" 
-                    step="0.01" 
-                    min="0"
-                    value={formData.views} 
-                    onChange={e => setFormData({...formData, views: e.target.value})} 
-                    className={`w-full p-2 md:p-4 rounded-xl border-2 font-bold ${
-                      formErrors.views ? 'border-red-500 bg-red-50' : 'border-slate-200'
-                    }`}
-                    required
-                  />
+                {/* NUEVO: Visualizaciones con selector de unidades */}
+                <div className="space-y-1 md:col-span-2">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase">Visualizaciones</label>
+                  <div className="flex gap-2">
+                    <input 
+                      placeholder="Ej: 1500" 
+                      type="number" 
+                      step="any"
+                      min="0"
+                      value={viewInput} 
+                      onChange={e => setViewInput(e.target.value)} 
+                      className={`flex-1 p-2 md:p-4 rounded-xl border-2 font-bold ${
+                        formErrors.views ? 'border-red-500 bg-red-50' : 'border-slate-200'
+                      }`}
+                      required
+                    />
+                    <select 
+                      value={viewUnit} 
+                      onChange={e => setViewUnit(Number(e.target.value))}
+                      className="p-2 md:p-4 rounded-xl border-2 font-bold border-slate-200 bg-slate-50 text-xs"
+                      title="Selecciona la unidad"
+                    >
+                      {VIEW_UNITS.map(unit => (
+                        <option key={unit.value} value={unit.value}>
+                          {unit.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                   {formErrors.views && <p className="text-[10px] text-red-500 font-bold">{formErrors.views}</p>}
+                  {viewInput && (
+                    <p className="text-[10px] text-slate-500">
+                      = {parseFloat(viewInput * viewUnit).toLocaleString()} visualizaciones totales
+                    </p>
+                  )}
                 </div>
                 
                 <div className="space-y-1">
@@ -540,7 +613,7 @@ export default function App() {
                           {item.topic || "SIN TÍTULO"}
                         </p>
                         <p className="text-[8px] font-bold text-slate-400">
-                          {(item.date || "").split("-").reverse().slice(0,2).join("/")} • {((item.views || 0)/1000000).toFixed(2)}M VISTAS • {item.format}
+                          {(item.date || "").split("-").reverse().slice(0,2).join("/")} • {formatViews(item.views)} VISTAS • {item.format}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
@@ -612,7 +685,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Resultados de búsqueda */}
               {searchResults.length > 0 ? (
                 <div className="space-y-3">
                   <h3 className="text-sm font-black text-slate-500 uppercase mb-3">
@@ -634,13 +706,11 @@ export default function App() {
                           </p>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-[10px] font-bold text-slate-600">
                             <span className="bg-white px-2 py-1 rounded">📅 {item.date}</span>
-                            <span className="bg-white px-2 py-1 rounded">👁️ {item.views}M views</span>
+                            <span className="bg-white px-2 py-1 rounded">👁️ {formatViews(item.views)} views</span>
                             <span className="bg-white px-2 py-1 rounded">💰 ${item.revenue}</span>
                             <span className="bg-white px-2 py-1 rounded">📝 {item.format}</span>
                             {item.interactions && <span className="bg-white px-2 py-1 rounded">👍 {item.interactions}K interac.</span>}
                             {item.followers && <span className="bg-white px-2 py-1 rounded">👥 {item.followers} followers</span>}
-                            {item.espectadores && <span className="bg-white px-2 py-1 rounded">📺 {item.espectadores}M espect.</span>}
-                            {item.visitas && <span className="bg-white px-2 py-1 rounded">🏠 {item.visitas} visitas</span>}
                           </div>
                         </div>
                         <div className="text-right ml-4">
@@ -674,7 +744,6 @@ export default function App() {
               )}
             </section>
 
-            {/* Calendario visual rápido */}
             <section className="bg-white p-6 rounded-xl md:rounded-[40px] border-2 border-slate-300 shadow-xl">
               <h3 className="text-lg font-black text-[#003566] uppercase italic mb-4">
                 📊 Fechas con publicaciones - {searchMonth === "enero" ? "Enero" : "Febrero"} 2026
@@ -702,10 +771,9 @@ export default function App() {
           </div>
         )}
 
-        {/* HISTÓRICO ENERO - DATOS COMPLETOS */}
+        {/* HISTÓRICO ENERO */}
         {activeTab === "historico" && (
           <div className="space-y-6">
-            {/* Resumen de enero */}
             <section className="bg-slate-500 p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-slate-700 shadow-xl">
               <h2 className="text-2xl font-black uppercase italic mb-4">Resumen Enero 2026</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -729,7 +797,6 @@ export default function App() {
               </div>
             </section>
 
-            {/* Tabla completa de enero */}
             <section className="bg-white rounded-xl md:rounded-[40px] p-4 md:p-8 border-2 border-slate-300 overflow-x-auto">
               <h2 className="text-xl md:text-2xl font-black text-slate-400 uppercase italic mb-6">
                 Archivo Completo - Enero 2026 (31 días)
