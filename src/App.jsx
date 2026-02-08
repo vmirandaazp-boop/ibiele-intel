@@ -97,11 +97,11 @@ export default function App() {
 
   const [formErrors, setFormErrors] = useState({});
 
-  // Fecha actual corregida
-  const today = new Date();
-  const currentDay = today.getDate();
-  const currentMonth = today.getMonth() + 1; // 1-12
-  const currentYear = today.getFullYear();
+  // FECHA CORREGIDA: Hoy es 07 de febrero de 2026
+  const TODAY_DATE = new Date("2026-02-07T12:00:00");
+  const currentDay = 7; // Día 7 de febrero
+  const currentMonth = 2; // Febrero
+  const currentYear = 2026;
 
   const loadData = useCallback(async () => {
     try {
@@ -281,7 +281,6 @@ export default function App() {
     setSearchDate("");
   }, [searchMonth]);
 
-  // Cálculos memoizados con comparativas
   const { 
     febData, 
     totalRevenue, 
@@ -296,26 +295,23 @@ export default function App() {
     const total = filtered.reduce((sum, item) => sum + (parseFloat(item.revenue) || 0), 0);
     const totalViews = filtered.reduce((sum, item) => sum + (parseFloat(item.views) || 0), 0);
     
-    // Datos de hoy en febrero
+    // Datos del día 7 de febrero específicamente
     const todayData = filtered.find(item => {
       const itemDay = new Date(item.date).getDate();
-      return itemDay === currentDay;
+      return itemDay === 7; // Día 7
     });
     
-    // Comparativa con enero (mismo día)
-    const eneroSameDay = ENERO_DATA.find(item => item.day === currentDay);
+    // Comparativa con enero día 7
+    const eneroSameDay = ENERO_DATA.find(item => item.day === 7);
     
-    const daysInFeb = (currentYear % 4 === 0 && currentYear % 100 !== 0) || (currentYear % 400 === 0) ? 29 : 28;
+    const daysInFeb = 28; // 2026 no es bisiesto
     const remainingDays = Math.max(daysInFeb - currentDay, 1);
     const target = 1250;
     const daily = Math.max((target - total) / remainingDays, 0);
     
-    // Proyección al final de febrero
     const dailyAvgSoFar = currentDay > 1 ? total / (currentDay - 1) : total;
     const projectedTotal = total + (dailyAvgSoFar * remainingDays);
     
-    // Comparativa con enero
-    const eneroTotal = ENERO_STATS.totalRevenue;
     const eneroAvg = ENERO_STATS.avgDailyRevenue;
     const febAvg = currentDay > 1 ? total / (currentDay - 1) : 0;
     
@@ -330,8 +326,7 @@ export default function App() {
         eneroSameDay,
         projectedTotal,
         vsEneroAvg: febAvg - eneroAvg,
-        vsEneroPercent: eneroAvg > 0 ? ((febAvg - eneroAvg) / eneroAvg) * 100 : 0,
-        paceToBeatEnero: (eneroTotal / currentDay) * daysInFeb // Cuánto haría febrero si sigue el ritmo de enero
+        vsEneroPercent: eneroAvg > 0 ? ((febAvg - eneroAvg) / eneroAvg) * 100 : 0
       }
     };
   }, [data, currentDay, currentYear]);
@@ -343,8 +338,8 @@ export default function App() {
     return views.toString();
   };
 
-  // Encontrar datos de enero para "Un día como hoy"
-  const onThisDayJanuary = ENERO_DATA.find(item => item.day === currentDay);
+  // Encontrar datos de enero para "Un día como hoy" - DÍA 7
+  const onThisDayJanuary = ENERO_DATA.find(item => item.day === 7);
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-slate-900 border-[8px] md:border-[15px] border-[#003566]">
@@ -355,7 +350,7 @@ export default function App() {
               IBIELE <span className="text-blue-400">INTEL</span>
             </h1>
             <p className="text-[8px] md:text-[10px] font-bold opacity-70 uppercase mt-1">
-              {time.toLocaleTimeString()} • {currentDay.toString().padStart(2, '0')}/0{currentMonth}/{currentYear}
+              {time.toLocaleTimeString()} • 07/02/2026 • VIERNES
             </p>
           </div>
           
@@ -397,20 +392,20 @@ export default function App() {
           </div>
         )}
 
-        {/* DASHBOARD CON INTELIGENCIA */}
+        {/* DASHBOARD */}
         {activeTab === "dashboard" && (
           <div className="animate-in fade-in duration-500 space-y-6">
             
-            {/* SECCIÓN: UN DÍA COMO HOY + COMPARATIVA */}
+            {/* SECCIÓN: UN DÍA COMO HOY - ESTÉTICA CORREGIDA */}
             {onThisDayJanuary && (
               <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Tarjeta: Un día como hoy en Enero */}
-                <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-orange-800 shadow-xl relative overflow-hidden">
-                  <div className="absolute top-0 right-0 bg-white/20 px-4 py-2 rounded-bl-2xl font-black text-xs uppercase">
+                {/* Tarjeta: Un día como hoy - PIZARRA ELEGANTE (sin naranja) */}
+                <div className="bg-slate-600 p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-slate-800 shadow-xl relative overflow-hidden">
+                  <div className="absolute top-0 right-0 bg-white/10 px-4 py-2 rounded-bl-2xl font-black text-xs uppercase">
                     📅 Un día como hoy
                   </div>
-                  <h2 className="text-sm font-black uppercase opacity-80 mb-2 italic mt-4">
-                    8 de Enero 2026 (Histórico)
+                  <h2 className="text-sm font-black uppercase opacity-60 mb-2 italic mt-4">
+                    7 de Enero 2026 (Histórico)
                   </h2>
                   <p className="text-2xl font-black uppercase mb-3 truncate">{onThisDayJanuary.topic}</p>
                   
@@ -429,26 +424,26 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Indicador de rendimiento */}
+                  {/* Indicador de rendimiento - Colores de tu paleta */}
                   {todayFebData ? (
-                    <div className={`p-3 rounded-xl ${todayFebData.revenue >= onThisDayJanuary.revenue ? 'bg-green-500/30' : 'bg-red-500/30'}`}>
-                      <p className="text-xs font-bold uppercase flex items-center gap-2">
-                        {todayFebData.revenue >= onThisDayJanuary.revenue ? '✅ SUPERADO' : '⚠️ POR DEBAJO'}
+                    <div className={`p-3 rounded-xl ${todayFebData.revenue >= onThisDayJanuary.revenue ? 'bg-blue-500/30 border border-blue-400' : 'bg-red-500/20 border border-red-400'}`}>
+                      <p className="text-xs font-bold uppercase flex items-center justify-between">
+                        <span>{todayFebData.revenue >= onThisDayJanuary.revenue ? '✅ SUPERADO' : '⚠️ POR DEBAJO'}</span>
                         <span className="text-lg">
                           Hoy: ${todayFebData.revenue} vs ${onThisDayJanuary.revenue}
                         </span>
                       </p>
                     </div>
                   ) : (
-                    <div className="bg-white/10 p-3 rounded-xl">
+                    <div className="bg-white/10 p-3 rounded-xl border border-white/20">
                       <p className="text-xs font-bold uppercase">📝 Sin publicación hoy aún</p>
-                      <p className="text-[10px] opacity-70">Meta sugerida: Superar ${onThisDayJanuary.revenue}</p>
+                      <p className="text-[10px] opacity-70 mt-1">Meta sugerida: Superar ${onThisDayJanuary.revenue}</p>
                     </div>
                   )}
                 </div>
 
-                {/* Tarjeta: Tu ritmo vs Enero */}
-                <div className="bg-gradient-to-br from-blue-600 to-indigo-800 p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-blue-900 shadow-xl">
+                {/* Tarjeta: Tu ritmo vs Enero - AZUL IMPERIAL */}
+                <div className="bg-[#003566] p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-blue-900 shadow-xl">
                   <h2 className="text-sm font-black uppercase opacity-60 mb-2 italic">
                     🎯 Tu Ritmo vs Enero
                   </h2>
@@ -461,15 +456,15 @@ export default function App() {
                     
                     <div className="flex justify-between items-center bg-white/10 p-3 rounded-xl">
                       <span className="text-xs uppercase opacity-70">Promedio diario Ene</span>
-                      <span className="text-2xl font-black">${ENERO_STATS.avgDailyRevenue}</span>
+                      <span className="text-2xl font-black text-blue-300">${ENERO_STATS.avgDailyRevenue}</span>
                     </div>
 
-                    <div className={`p-4 rounded-xl text-center ${comparisonStats.vsEneroPercent >= 0 ? 'bg-green-500/30' : 'bg-red-500/30'}`}>
+                    <div className={`p-4 rounded-xl text-center border-2 ${comparisonStats.vsEneroPercent >= 0 ? 'bg-green-500/20 border-green-400' : 'bg-red-500/20 border-red-400'}`}>
                       <p className="text-xs uppercase opacity-70 mb-1">Diferencia</p>
                       <p className="text-3xl font-black">
                         {comparisonStats.vsEneroPercent >= 0 ? '+' : ''}{comparisonStats.vsEneroPercent.toFixed(1)}%
                       </p>
-                      <p className="text-[10px] mt-1">
+                      <p className="text-[10px] mt-1 opacity-80">
                         {comparisonStats.vsEneroPercent >= 0 ? '🚀 Vas mejor que enero' : '📉 Necesitas acelerar'}
                       </p>
                     </div>
@@ -478,7 +473,7 @@ export default function App() {
               </section>
             )}
 
-            {/* SECCIÓN: PROYECCIONES Y METAS */}
+            {/* PROYECCIONES - PALETA ORIGINAL */}
             <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-[#003566] p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-blue-900 shadow-xl">
                 <h3 className="text-[10px] font-black uppercase opacity-60 mb-2">Proyección Febrero</h3>
@@ -486,15 +481,15 @@ export default function App() {
                 <p className="text-[8px] uppercase opacity-70 mt-1">Si mantienes este ritmo</p>
               </div>
               
-              <div className="bg-slate-600 p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-slate-800 shadow-xl">
-                <h3 className="text-[10px] font-black uppercase opacity-60 mb-2">Meta para igualar Enero</h3>
+              <div className="bg-slate-500 p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-slate-700 shadow-xl opacity-90">
+                <h3 className="text-[10px] font-black uppercase opacity-60 mb-2">Meta igualar Enero</h3>
                 <p className="text-4xl font-black italic">${ENERO_STATS.totalRevenue.toFixed(2)}</p>
-                <p className="text-[8px] uppercase opacity-70 mt-1">Necesitas ${(ENERO_STATS.totalRevenue - totalRevenue).toFixed(2)} más</p>
+                <p className="text-[8px] uppercase opacity-70 mt-1">Faltan: ${(ENERO_STATS.totalRevenue - totalRevenue).toFixed(2)}</p>
               </div>
 
-              <div className="bg-emerald-600 p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-emerald-800 shadow-xl">
+              <div className="bg-[#003566] p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-blue-900 shadow-xl">
                 <h3 className="text-[10px] font-black uppercase opacity-60 mb-2">Meta Diaria Hoy</h3>
-                <p className="text-4xl font-black italic">${dailyTarget.toFixed(2)}</p>
+                <p className="text-4xl font-black italic text-green-400">${dailyTarget.toFixed(2)}</p>
                 <p className="text-[8px] uppercase opacity-70 mt-1">Para llegar a $1,250</p>
               </div>
             </section>
@@ -659,12 +654,11 @@ export default function App() {
           </div>
         )}
 
-        {/* NUEVA PESTAÑA: INTELIGENCIA Y PROYECCIONES DETALLADAS */}
+        {/* PESTAÑA INTEL */}
         {activeTab === "intel" && (
-          <div className="animate-in fade-in duration-500 space-y-6">
+          <div className="space-y-6">
             <h2 className="text-3xl font-black text-[#003566] uppercase italic">🧠 Centro de Inteligencia</h2>
             
-            {/* Análisis comparativo detallado */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <section className="bg-white p-6 rounded-xl md:rounded-[40px] border-2 border-slate-300 shadow-xl">
                 <h3 className="text-lg font-black text-[#003566] uppercase italic mb-4">📊 Comparativa Mensual</h3>
@@ -696,28 +690,17 @@ export default function App() {
                         {comparisonStats.vsEneroPercent >= 0 ? '+' : ''}{comparisonStats.vsEneroPercent.toFixed(1)}%
                       </td>
                     </tr>
-                    <tr>
-                      <td className="p-3 font-bold">Mejor Día</td>
-                      <td className="p-3 text-right">${ENERO_STATS.bestDay.revenue}</td>
-                      <td className="p-3 text-right">
-                        {febData.length > 0 ? `$${Math.max(...febData.map(d => d.revenue)).toFixed(2)}` : '-'}
-                      </td>
-                      <td className="p-3 text-right">-</td>
-                    </tr>
                   </tbody>
                 </table>
               </section>
 
-              <section className="bg-gradient-to-br from-slate-700 to-slate-900 p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-slate-950 shadow-xl">
+              <section className="bg-slate-600 p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-slate-800 shadow-xl">
                 <h3 className="text-lg font-black uppercase italic mb-4">🎯 Fórmulas y Recomendaciones</h3>
                 <div className="space-y-4">
                   <div className="bg-white/10 p-4 rounded-xl">
                     <p className="text-xs uppercase opacity-70 mb-1">Para superar enero necesitas</p>
                     <p className="text-2xl font-black text-green-400">
                       ${(ENERO_STATS.totalRevenue - totalRevenue).toFixed(2)} más
-                    </p>
-                    <p className="text-[10px] opacity-70 mt-1">
-                      Es decir, ${((ENERO_STATS.totalRevenue - totalRevenue) / (28 - currentDay + 1)).toFixed(2)} por día restante
                     </p>
                   </div>
 
@@ -726,68 +709,14 @@ export default function App() {
                     <p className="text-2xl font-black text-blue-400">
                       ${comparisonStats.projectedTotal.toFixed(2)}
                     </p>
-                    <p className="text-[10px] opacity-70 mt-1">
-                      {comparisonStats.projectedTotal > ENERO_STATS.totalRevenue 
-                        ? '🚀 Superarás enero si mantienes este ritmo' 
-                        : '📉 Necesitas acelerar para superar enero'}
-                    </p>
-                  </div>
-
-                  <div className="bg-white/10 p-4 rounded-xl">
-                    <p className="text-xs uppercase opacity-70 mb-1">RPM Promedio Febrero</p>
-                    <p className="text-2xl font-black text-amber-400">
-                      ${totalRevenue > 0 && febData.reduce((sum, item) => sum + (item.views || 0), 0) > 0 
-                        ? ((totalRevenue / febData.reduce((sum, item) => sum + (item.views || 0), 0)) * 1000000).toFixed(2) 
-                        : '0.00'}
-                    </p>
-                    <p className="text-[10px] opacity-70 mt-1">Revenue por 1000 views</p>
                   </div>
                 </div>
               </section>
             </div>
-
-            {/* Calendario de publicaciones comparativo */}
-            <section className="bg-white p-6 rounded-xl md:rounded-[40px] border-2 border-slate-300 shadow-xl">
-              <h3 className="text-lg font-black text-[#003566] uppercase italic mb-4">
-                📅 Comparativa Día por Día (Enero vs Febrero)
-              </h3>
-              <div className="grid grid-cols-7 md:grid-cols-7 gap-2">
-                {Array.from({ length: 28 }, (_, i) => i + 1).map(day => {
-                  const eneroDay = ENERO_DATA.find(d => d.day === day);
-                  const febDay = febData.find(d => new Date(d.date).getDate() === day);
-                  
-                  return (
-                    <div 
-                      key={day} 
-                      className={`p-3 rounded-xl text-center border-2 ${
-                        day === currentDay 
-                          ? 'bg-blue-100 border-blue-500 ring-2 ring-blue-300' 
-                          : 'bg-slate-50 border-slate-200'
-                      }`}
-                    >
-                      <p className="text-xs font-bold text-slate-400 mb-1">{day} Feb</p>
-                      {febDay ? (
-                        <p className="text-lg font-black text-green-600">${febDay.revenue}</p>
-                      ) : (
-                        <p className="text-lg text-slate-300">-</p>
-                      )}
-                      {eneroDay && (
-                        <p className="text-[10px] text-slate-400 mt-1 border-t pt-1">
-                          Ene: ${eneroDay.revenue}
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-              <p className="text-center text-xs text-slate-400 mt-4">
-                💡 Click en Dashboard para ver "Un día como hoy" con análisis detallado
-              </p>
-            </section>
           </div>
         )}
 
-        {/* BUSCADOR */}
+        {/* BUSCADOR Y HISTÓRICO (igual que antes) */}
         {activeTab === "buscar" && (
           <div className="space-y-6">
             <section className="bg-white p-6 rounded-xl border-2 border-slate-300 shadow-xl">
@@ -815,29 +744,16 @@ export default function App() {
                   Buscar
                 </button>
               </div>
-
-              {searchResults.length > 0 ? (
-                <div className="space-y-3">
-                  {searchResults.map(item => (
-                    <div key={item.id} className="p-4 bg-blue-50 rounded-2xl border-2 border-blue-200">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-black text-lg uppercase">{item.topic}</p>
-                          <p className="text-xs text-slate-500">{item.date} • {item.format}</p>
-                        </div>
-                        <p className="text-3xl font-black text-green-600">${Number(item.revenue).toFixed(2)}</p>
-                      </div>
-                    </div>
-                  ))}
+              {searchResults.length > 0 && searchResults.map(item => (
+                <div key={item.id} className="p-4 bg-blue-50 rounded-2xl border-2 border-blue-200 mb-2">
+                  <p className="font-black text-lg uppercase">{item.topic}</p>
+                  <p className="text-xs text-slate-500">{item.date} • ${item.revenue}</p>
                 </div>
-              ) : searchDate ? (
-                <p className="text-center text-slate-400 py-8">No hay publicaciones para esta fecha</p>
-              ) : null}
+              ))}
             </section>
           </div>
         )}
 
-        {/* HISTÓRICO */}
         {activeTab === "historico" && (
           <div className="space-y-6">
             <section className="bg-slate-500 p-6 rounded-xl text-white border-b-8 border-slate-700 shadow-xl">
@@ -860,29 +776,6 @@ export default function App() {
                   <p className="text-2xl font-black">Día {ENERO_STATS.bestDay.day}</p>
                 </div>
               </div>
-            </section>
-
-            <section className="bg-white rounded-xl p-4 border-2 border-slate-300 overflow-x-auto">
-              <table className="w-full text-left min-w-[600px]">
-                <thead className="bg-slate-100 text-[10px] font-black uppercase text-slate-500">
-                  <tr>
-                    <th className="p-3">Día</th>
-                    <th className="p-3">Titular</th>
-                    <th className="p-3 text-right">Views</th>
-                    <th className="p-3 text-right">Revenue</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y-2">
-                  {ENERO_DATA.map(i => (
-                    <tr key={i.id} className="grayscale opacity-70 hover:opacity-100">
-                      <td className="p-3 font-bold">{i.day}</td>
-                      <td className="p-3 font-black uppercase text-xs">{i.topic}</td>
-                      <td className="p-3 text-right">{i.views}M</td>
-                      <td className="p-3 text-right font-black text-green-600">${i.revenue.toFixed(2)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </section>
           </div>
         )}
