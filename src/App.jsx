@@ -1,12 +1,11 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-// Variables de entorno
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Faltan variables de entorno de Supabase. Verifica tu archivo .env");
+  throw new Error("Faltan variables de entorno de Supabase");
 }
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -18,46 +17,45 @@ const FORMATS = [
   { value: "Historias", label: "Historias", icon: "📱" }
 ];
 
-// Unidades para visualizaciones
 const VIEW_UNITS = [
-  { value: 1, label: "Unidades (1)", suffix: "", multiplier: 1 },
+  { value: 1, label: "Unidades", suffix: "", multiplier: 1 },
   { value: 1000, label: "Miles (K)", suffix: "K", multiplier: 1000 },
   { value: 1000000, label: "Millones (M)", suffix: "M", multiplier: 1000000 }
 ];
 
-// DATOS REALES DE ENERO 2026 (31 días completos)
+// DATOS REALES DE ENERO 2026
 const ENERO_DATA = [
-  { id: "ene-01", day: 1, date: "2026-01-01", views: 0.76, revenue: 7.85, interactions: 12.8, followers: 167, espectadores: 0.44, visitas: 943, topic: "🚫 PROHIBIDO QUEJARSE", format: "Foto" },
-  { id: "ene-02", day: 2, date: "2026-01-02", views: 0.78, revenue: 8.04, interactions: 13.1, followers: 225, espectadores: 0.46, visitas: 1365, topic: "CONTENIDO DÍA 2", format: "Foto" },
-  { id: "ene-03", day: 3, date: "2026-01-03", views: 2.01, revenue: 20.83, interactions: 20.0, followers: 559, espectadores: 1.10, visitas: 2448, topic: "CONTENIDO DÍA 3", format: "Reels" },
-  { id: "ene-04", day: 4, date: "2026-01-04", views: 0.78, revenue: 12.80, interactions: 10.1, followers: 182, espectadores: 0.47, visitas: 913, topic: "CONTENIDO DÍA 4", format: "Foto" },
-  { id: "ene-05", day: 5, date: "2026-01-05", views: 13.07, revenue: 103.96, interactions: 131.3, followers: 3081, espectadores: 8.02, visitas: 11049, topic: "😭 SUSURRARON JESÚS", format: "Reels" },
-  { id: "ene-06", day: 6, date: "2026-01-06", views: 6.24, revenue: 51.84, interactions: 81.2, followers: 1691, espectadores: 3.64, visitas: 6589, topic: "CONTENIDO DÍA 6", format: "Foto" },
-  { id: "ene-07", day: 7, date: "2026-01-07", views: 5.30, revenue: 44.32, interactions: 59.2, followers: 1225, espectadores: 2.86, visitas: 5737, topic: "CONTENIDO DÍA 7", format: "Foto" },
-  { id: "ene-08", day: 8, date: "2026-01-08", views: 6.86, revenue: 61.68, interactions: 70.1, followers: 1591, espectadores: 3.83, visitas: 8745, topic: "CONTENIDO DÍA 8", format: "Foto" },
-  { id: "ene-09", day: 9, date: "2026-01-09", views: 4.32, revenue: 45.48, interactions: 62.1, followers: 1448, espectadores: 2.50, visitas: 5889, topic: "CONTENIDO DÍA 9", format: "Foto" },
-  { id: "ene-10", day: 10, date: "2026-01-10", views: 5.30, revenue: 37.98, interactions: 59.7, followers: 971, espectadores: 2.78, visitas: 5094, topic: "CONTENIDO DÍA 10", format: "Foto" },
-  { id: "ene-11", day: 11, date: "2026-01-11", views: 9.19, revenue: 84.27, interactions: 84.2, followers: 1969, espectadores: 5.42, visitas: 8543, topic: "🏟️ CALIFORNIA 50K", format: "Reels" },
-  { id: "ene-12", day: 12, date: "2026-01-12", views: 3.22, revenue: 31.96, interactions: 33.3, followers: 737, espectadores: 1.82, visitas: 3375, topic: "CONTENIDO DÍA 12", format: "Foto" },
-  { id: "ene-13", day: 13, date: "2026-01-13", views: 2.02, revenue: 22.29, interactions: 22.7, followers: 438, espectadores: 1.12, visitas: 2446, topic: "CONTENIDO DÍA 13", format: "Foto" },
-  { id: "ene-14", day: 14, date: "2026-01-14", views: 2.06, revenue: 21.54, interactions: 34.6, followers: 453, espectadores: 1.15, visitas: 2290, topic: "CONTENIDO DÍA 14", format: "Foto" },
-  { id: "ene-15", day: 15, date: "2026-01-15", views: 2.68, revenue: 23.74, interactions: 36.6, followers: 657, espectadores: 1.50, visitas: 2925, topic: "CONTENIDO DÍA 15", format: "Foto" },
-  { id: "ene-16", day: 16, date: "2026-01-16", views: 0.93, revenue: 8.16, interactions: 12.3, followers: 178, espectadores: 0.49, visitas: 1511, topic: "CONTENIDO DÍA 16", format: "Foto" },
-  { id: "ene-17", day: 17, date: "2026-01-17", views: 7.51, revenue: 60.45, interactions: 123.3, followers: 2193, espectadores: 4.63, visitas: 7144, topic: "CONTENIDO DÍA 17", format: "Reels" },
-  { id: "ene-18", day: 18, date: "2026-01-18", views: 2.93, revenue: 25.13, interactions: 49.4, followers: 740, espectadores: 1.67, visitas: 3636, topic: "CONTENIDO DÍA 18", format: "Foto" },
-  { id: "ene-19", day: 19, date: "2026-01-19", views: 4.59, revenue: 43.14, interactions: 82.3, followers: 1526, espectadores: 2.82, visitas: 6016, topic: "CONTENIDO DÍA 19", format: "Foto" },
-  { id: "ene-20", day: 20, date: "2026-01-20", views: 4.53, revenue: 46.21, interactions: 79.8, followers: 1380, espectadores: 2.60, visitas: 5252, topic: "CONTENIDO DÍA 20", format: "Foto" },
-  { id: "ene-21", day: 21, date: "2026-01-21", views: 2.13, revenue: 16.41, interactions: 33.2, followers: 465, espectadores: 1.20, visitas: 2442, topic: "CONTENIDO DÍA 21", format: "Foto" },
-  { id: "ene-22", day: 22, date: "2026-01-22", views: 1.08, revenue: 9.99, interactions: 21.6, followers: 252, espectadores: 0.62, visitas: 1721, topic: "CONTENIDO DÍA 22", format: "Foto" },
-  { id: "ene-23", day: 23, date: "2026-01-23", views: 1.09, revenue: 12.67, interactions: 25.4, followers: 301, espectadores: 0.67, visitas: 1509, topic: "CONTENIDO DÍA 23", format: "Foto" },
-  { id: "ene-24", day: 24, date: "2026-01-24", views: 2.02, revenue: 21.03, interactions: 38.8, followers: 470, espectadores: 1.12, visitas: 2315, topic: "CONTENIDO DÍA 24", format: "Foto" },
-  { id: "ene-25", day: 25, date: "2026-01-25", views: 8.32, revenue: 70.59, interactions: 74.7, followers: 1200, espectadores: 5.12, visitas: 7911, topic: "🩸 PAGAN CON SANGRE", format: "Reels" },
-  { id: "ene-26", day: 26, date: "2026-01-26", views: 4.76, revenue: 41.61, interactions: 45.9, followers: 717, espectadores: 2.73, visitas: 5091, topic: "CONTENIDO DÍA 26", format: "Foto" },
-  { id: "ene-27", day: 27, date: "2026-01-27", views: 3.05, revenue: 27.50, interactions: 29.7, followers: 424, espectadores: 1.70, visitas: 3188, topic: "CONTENIDO DÍA 27", format: "Foto" },
-  { id: "ene-28", day: 28, date: "2026-01-28", views: 1.56, revenue: 14.83, interactions: 16.5, followers: 231, espectadores: 0.89, visitas: 1846, topic: "CONTENIDO DÍA 28", format: "Foto" },
-  { id: "ene-29", day: 29, date: "2026-01-29", views: 1.19, revenue: 10.86, interactions: 13.0, followers: 215, espectadores: 0.66, visitas: 1982, topic: "CONTENIDO DÍA 29", format: "Foto" },
-  { id: "ene-30", day: 30, date: "2026-01-30", views: 0.95, revenue: 11.47, interactions: 11.2, followers: 186, espectadores: 0.53, visitas: 1440, topic: "CONTENIDO DÍA 30", format: "Foto" },
-  { id: "ene-31", day: 31, date: "2026-01-31", views: 1.83, revenue: 21.20, interactions: 32.4, followers: 257, espectadores: 1.10, visitas: 1759, topic: "🇺🇸 CALIFORNIA FE", format: "Foto" }
+  { id: "ene-01", day: 1, date: "2026-01-01", views: 0.76, revenue: 7.85, interactions: 12.8, followers: 167, topic: "🚫 PROHIBIDO QUEJARSE", format: "Foto" },
+  { id: "ene-02", day: 2, date: "2026-01-02", views: 0.78, revenue: 8.04, interactions: 13.1, followers: 225, topic: "CONTENIDO DÍA 2", format: "Foto" },
+  { id: "ene-03", day: 3, date: "2026-01-03", views: 2.01, revenue: 20.83, interactions: 20.0, followers: 559, topic: "CONTENIDO DÍA 3", format: "Reels" },
+  { id: "ene-04", day: 4, date: "2026-01-04", views: 0.78, revenue: 12.80, interactions: 10.1, followers: 182, topic: "CONTENIDO DÍA 4", format: "Foto" },
+  { id: "ene-05", day: 5, date: "2026-01-05", views: 13.07, revenue: 103.96, interactions: 131.3, followers: 3081, topic: "😭 SUSURRARON JESÚS", format: "Reels" },
+  { id: "ene-06", day: 6, date: "2026-01-06", views: 6.24, revenue: 51.84, interactions: 81.2, followers: 1691, topic: "CONTENIDO DÍA 6", format: "Foto" },
+  { id: "ene-07", day: 7, date: "2026-01-07", views: 5.30, revenue: 44.32, interactions: 59.2, followers: 1225, topic: "CONTENIDO DÍA 7", format: "Foto" },
+  { id: "ene-08", day: 8, date: "2026-01-08", views: 6.86, revenue: 61.68, interactions: 70.1, followers: 1591, topic: "CONTENIDO DÍA 8", format: "Foto" },
+  { id: "ene-09", day: 9, date: "2026-01-09", views: 4.32, revenue: 45.48, interactions: 62.1, followers: 1448, topic: "CONTENIDO DÍA 9", format: "Foto" },
+  { id: "ene-10", day: 10, date: "2026-01-10", views: 5.30, revenue: 37.98, interactions: 59.7, followers: 971, topic: "CONTENIDO DÍA 10", format: "Foto" },
+  { id: "ene-11", day: 11, date: "2026-01-11", views: 9.19, revenue: 84.27, interactions: 84.2, followers: 1969, topic: "🏟️ CALIFORNIA 50K", format: "Reels" },
+  { id: "ene-12", day: 12, date: "2026-01-12", views: 3.22, revenue: 31.96, interactions: 33.3, followers: 737, topic: "CONTENIDO DÍA 12", format: "Foto" },
+  { id: "ene-13", day: 13, date: "2026-01-13", views: 2.02, revenue: 22.29, interactions: 22.7, followers: 438, topic: "CONTENIDO DÍA 13", format: "Foto" },
+  { id: "ene-14", day: 14, date: "2026-01-14", views: 2.06, revenue: 21.54, interactions: 34.6, followers: 453, topic: "CONTENIDO DÍA 14", format: "Foto" },
+  { id: "ene-15", day: 15, date: "2026-01-15", views: 2.68, revenue: 23.74, interactions: 36.6, followers: 657, topic: "CONTENIDO DÍA 15", format: "Foto" },
+  { id: "ene-16", day: 16, date: "2026-01-16", views: 0.93, revenue: 8.16, interactions: 12.3, followers: 178, topic: "CONTENIDO DÍA 16", format: "Foto" },
+  { id: "ene-17", day: 17, date: "2026-01-17", views: 7.51, revenue: 60.45, interactions: 123.3, followers: 2193, topic: "CONTENIDO DÍA 17", format: "Reels" },
+  { id: "ene-18", day: 18, date: "2026-01-18", views: 2.93, revenue: 25.13, interactions: 49.4, followers: 740, topic: "CONTENIDO DÍA 18", format: "Foto" },
+  { id: "ene-19", day: 19, date: "2026-01-19", views: 4.59, revenue: 43.14, interactions: 82.3, followers: 1526, topic: "CONTENIDO DÍA 19", format: "Foto" },
+  { id: "ene-20", day: 20, date: "2026-01-20", views: 4.53, revenue: 46.21, interactions: 79.8, followers: 1380, topic: "CONTENIDO DÍA 20", format: "Foto" },
+  { id: "ene-21", day: 21, date: "2026-01-21", views: 2.13, revenue: 16.41, interactions: 33.2, followers: 465, topic: "CONTENIDO DÍA 21", format: "Foto" },
+  { id: "ene-22", day: 22, date: "2026-01-22", views: 1.08, revenue: 9.99, interactions: 21.6, followers: 252, topic: "CONTENIDO DÍA 22", format: "Foto" },
+  { id: "ene-23", day: 23, date: "2026-01-23", views: 1.09, revenue: 12.67, interactions: 25.4, followers: 301, topic: "CONTENIDO DÍA 23", format: "Foto" },
+  { id: "ene-24", day: 24, date: "2026-01-24", views: 2.02, revenue: 21.03, interactions: 38.8, followers: 470, topic: "CONTENIDO DÍA 24", format: "Foto" },
+  { id: "ene-25", day: 25, date: "2026-01-25", views: 8.32, revenue: 70.59, interactions: 74.7, followers: 1200, topic: "🩸 PAGAN CON SANGRE", format: "Reels" },
+  { id: "ene-26", day: 26, date: "2026-01-26", views: 4.76, revenue: 41.61, interactions: 45.9, followers: 717, topic: "CONTENIDO DÍA 26", format: "Foto" },
+  { id: "ene-27", day: 27, date: "2026-01-27", views: 3.05, revenue: 27.50, interactions: 29.7, followers: 424, topic: "CONTENIDO DÍA 27", format: "Foto" },
+  { id: "ene-28", day: 28, date: "2026-01-28", views: 1.56, revenue: 14.83, interactions: 16.5, followers: 231, topic: "CONTENIDO DÍA 28", format: "Foto" },
+  { id: "ene-29", day: 29, date: "2026-01-29", views: 1.19, revenue: 10.86, interactions: 13.0, followers: 215, topic: "CONTENIDO DÍA 29", format: "Foto" },
+  { id: "ene-30", day: 30, date: "2026-01-30", views: 0.95, revenue: 11.47, interactions: 11.2, followers: 186, topic: "CONTENIDO DÍA 30", format: "Foto" },
+  { id: "ene-31", day: 31, date: "2026-01-31", views: 1.83, revenue: 21.20, interactions: 32.4, followers: 257, topic: "🇺🇸 CALIFORNIA FE", format: "Foto" }
 ];
 
 const ENERO_STATS = {
@@ -66,6 +64,7 @@ const ENERO_STATS = {
   totalInteractions: 1442.3,
   totalFollowers: 2193,
   avgDailyRevenue: 32.90,
+  avgDailyViews: 3.65,
   bestDay: { day: 5, revenue: 103.96, topic: "😭 SUSURRARON JESÚS" },
   worstDay: { day: 1, revenue: 7.85, topic: "🚫 PROHIBIDO QUEJARSE" }
 };
@@ -79,19 +78,17 @@ export default function App() {
   const [time, setTime] = useState(new Date());
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Estados para búsqueda por fecha
   const [searchDate, setSearchDate] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searchMonth, setSearchMonth] = useState("febrero");
 
-  // Estados para unidades de visualización
-  const [viewUnit, setViewUnit] = useState(1000000); // Por defecto en millones
-  const [viewInput, setViewInput] = useState(""); // Valor que el usuario escribe
+  const [viewUnit, setViewUnit] = useState(1000000);
+  const [viewInput, setViewInput] = useState("");
 
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     revenue: "",
-    views: "", // Siempre se guarda en unidades base (número completo)
+    views: "",
     interactions: "",
     followers: "",
     format: "Foto",
@@ -100,18 +97,22 @@ export default function App() {
 
   const [formErrors, setFormErrors] = useState({});
 
+  // Fecha actual corregida
+  const today = new Date();
+  const currentDay = today.getDate();
+  const currentMonth = today.getMonth() + 1; // 1-12
+  const currentYear = today.getFullYear();
+
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      
       const { data: metrics, error: supabaseError } = await supabase
         .from("metrics")
         .select("*")
         .order('date', { ascending: false });
       
       if (supabaseError) throw supabaseError;
-      
       setData(metrics || []);
     } catch (err) {
       console.error("Error cargando datos:", err);
@@ -127,52 +128,37 @@ export default function App() {
     return () => clearInterval(timer);
   }, [loadData]);
 
-  // Convertir valor de entrada a unidades base según la unidad seleccionada
   const convertToBase = (value, unit) => {
     const num = parseFloat(value) || 0;
     return num * unit;
   };
 
-  // Convertir unidades base a valor de entrada según la unidad seleccionada
-  const convertFromBase = (baseValue, unit) => {
-    if (!baseValue) return "";
-    return (baseValue / unit).toString();
-  };
-
   const validateForm = useCallback(() => {
     const errors = {};
-    
     if (!formData.date || isNaN(new Date(formData.date).getTime())) {
       errors.date = "Fecha inválida";
     }
-    
     const revenue = parseFloat(formData.revenue);
     if (isNaN(revenue) || revenue < 0) {
       errors.revenue = "Ingresa un número positivo";
     }
-    
     const views = parseFloat(viewInput);
     if (isNaN(views) || views < 0) {
       errors.views = "Ingresa un número positivo";
     }
-    
     if (!formData.topic.trim()) {
       errors.topic = "El titular es obligatorio";
     }
-    
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   }, [formData, viewInput]);
 
   const saveData = async (e) => {
     e.preventDefault();
-    
     if (!validateForm()) return;
-    
     setIsSubmitting(true);
     setError(null);
 
-    // Convertir visualizaciones a unidades base antes de guardar
     const viewsInBase = convertToBase(viewInput, viewUnit);
 
     const payload = {
@@ -187,22 +173,14 @@ export default function App() {
 
     try {
       if (editingId) {
-        const { error: updateError } = await supabase
-          .from("metrics")
-          .update(payload)
-          .eq('id', editingId);
-          
+        const { error: updateError } = await supabase.from("metrics").update(payload).eq('id', editingId);
         if (updateError) throw updateError;
         setEditingId(null);
       } else {
-        const { error: insertError } = await supabase
-          .from("metrics")
-          .insert([payload]);
-          
+        const { error: insertError } = await supabase.from("metrics").insert([payload]);
         if (insertError) throw insertError;
       }
       
-      // Resetear formulario
       setFormData({
         date: new Date().toISOString().split('T')[0],
         revenue: "",
@@ -213,9 +191,8 @@ export default function App() {
         topic: ""
       });
       setViewInput("");
-      setViewUnit(1000000); // Volver a millones por defecto
+      setViewUnit(1000000);
       setFormErrors({});
-      
       await loadData();
     } catch (err) {
       console.error("Error guardando:", err);
@@ -227,10 +204,8 @@ export default function App() {
 
   const handleEdit = (item) => {
     setEditingId(item.id);
-    
-    // Determinar la mejor unidad para mostrar el valor
     const views = item.views || 0;
-    let bestUnit = 1000000; // Default millones
+    let bestUnit = 1000000;
     let displayValue = views / 1000000;
     
     if (views < 1000) {
@@ -247,7 +222,7 @@ export default function App() {
     setFormData({
       date: item.date,
       revenue: item.revenue?.toString() || "",
-      views: views.toString(), // Guardamos el valor base
+      views: views.toString(),
       interactions: item.interactions ? (item.interactions / 1000).toString() : "",
       followers: item.followers?.toString() || "",
       format: item.format || "Foto",
@@ -275,17 +250,11 @@ export default function App() {
   };
 
   const deleteRow = async (id) => {
-    if (!window.confirm("¿BORRAR REGISTRO? Esta acción no se puede deshacer.")) return;
-    
+    if (!window.confirm("¿BORRAR REGISTRO?")) return;
     try {
       setError(null);
-      const { error: deleteError } = await supabase
-        .from("metrics")
-        .delete()
-        .eq('id', id);
-        
+      const { error: deleteError } = await supabase.from("metrics").delete().eq('id', id);
       if (deleteError) throw deleteError;
-      
       await loadData();
     } catch (err) {
       console.error("Error eliminando:", err);
@@ -298,15 +267,12 @@ export default function App() {
       setSearchResults([]);
       return;
     }
-
     let results = [];
-    
     if (searchMonth === "enero") {
       results = ENERO_DATA.filter(item => item.date === searchDate);
     } else {
       results = data.filter(item => item.date === searchDate);
     }
-    
     setSearchResults(results);
   }, [searchDate, searchMonth, data]);
 
@@ -315,34 +281,70 @@ export default function App() {
     setSearchDate("");
   }, [searchMonth]);
 
-  const { febData, totalRevenue, dailyTarget, progressPercent } = useMemo(() => {
-    const currentYear = new Date().getFullYear();
+  // Cálculos memoizados con comparativas
+  const { 
+    febData, 
+    totalRevenue, 
+    dailyTarget, 
+    progressPercent,
+    todayFebData,
+    comparisonStats 
+  } = useMemo(() => {
     const febPrefix = `${currentYear}-02-`;
     const filtered = data.filter(item => item.date?.startsWith(febPrefix));
     
     const total = filtered.reduce((sum, item) => sum + (parseFloat(item.revenue) || 0), 0);
+    const totalViews = filtered.reduce((sum, item) => sum + (parseFloat(item.views) || 0), 0);
     
-    const today = new Date().getDate();
+    // Datos de hoy en febrero
+    const todayData = filtered.find(item => {
+      const itemDay = new Date(item.date).getDate();
+      return itemDay === currentDay;
+    });
+    
+    // Comparativa con enero (mismo día)
+    const eneroSameDay = ENERO_DATA.find(item => item.day === currentDay);
+    
     const daysInFeb = (currentYear % 4 === 0 && currentYear % 100 !== 0) || (currentYear % 400 === 0) ? 29 : 28;
-    const remainingDays = Math.max(daysInFeb - today, 1);
+    const remainingDays = Math.max(daysInFeb - currentDay, 1);
     const target = 1250;
     const daily = Math.max((target - total) / remainingDays, 0);
+    
+    // Proyección al final de febrero
+    const dailyAvgSoFar = currentDay > 1 ? total / (currentDay - 1) : total;
+    const projectedTotal = total + (dailyAvgSoFar * remainingDays);
+    
+    // Comparativa con enero
+    const eneroTotal = ENERO_STATS.totalRevenue;
+    const eneroAvg = ENERO_STATS.avgDailyRevenue;
+    const febAvg = currentDay > 1 ? total / (currentDay - 1) : 0;
     
     return {
       febData: filtered,
       totalRevenue: total,
+      totalViews: totalViews,
       dailyTarget: daily,
-      progressPercent: Math.min((total / target) * 100, 100)
+      progressPercent: Math.min((total / target) * 100, 100),
+      todayFebData: todayData,
+      comparisonStats: {
+        eneroSameDay,
+        projectedTotal,
+        vsEneroAvg: febAvg - eneroAvg,
+        vsEneroPercent: eneroAvg > 0 ? ((febAvg - eneroAvg) / eneroAvg) * 100 : 0,
+        paceToBeatEnero: (eneroTotal / currentDay) * daysInFeb // Cuánto haría febrero si sigue el ritmo de enero
+      }
     };
-  }, [data]);
+  }, [data, currentDay, currentYear]);
 
-  // Función para formatear visualizaciones en la tabla
   const formatViews = (views) => {
     if (!views) return "0";
     if (views >= 1000000) return `${(views / 1000000).toFixed(2)}M`;
     if (views >= 1000) return `${(views / 1000).toFixed(1)}K`;
     return views.toString();
   };
+
+  // Encontrar datos de enero para "Un día como hoy"
+  const onThisDayJanuary = ENERO_DATA.find(item => item.day === currentDay);
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-slate-900 border-[8px] md:border-[15px] border-[#003566]">
@@ -353,13 +355,13 @@ export default function App() {
               IBIELE <span className="text-blue-400">INTEL</span>
             </h1>
             <p className="text-[8px] md:text-[10px] font-bold opacity-70 uppercase mt-1">
-              {time.toLocaleTimeString()} • COMANDO CENTRAL
+              {time.toLocaleTimeString()} • {currentDay.toString().padStart(2, '0')}/0{currentMonth}/{currentYear}
             </p>
           </div>
           
           <div className="w-full md:w-auto overflow-x-auto no-scrollbar flex justify-center">
             <div className="flex bg-white/5 p-1 rounded-xl">
-              {["dashboard", "buscar", "historico"].map(tab => (
+              {["dashboard", "intel", "buscar", "historico"].map(tab => (
                 <button 
                   key={tab} 
                   onClick={() => setActiveTab(tab)} 
@@ -369,7 +371,7 @@ export default function App() {
                       : "text-blue-200 hover:text-white"
                   }`}
                 >
-                  {tab === "buscar" ? "🔍 BUSCAR" : tab.toUpperCase()}
+                  {tab === "intel" ? "🧠 INTEL" : tab === "buscar" ? "🔍 BUSCAR" : tab.toUpperCase()}
                 </button>
               ))}
             </div>
@@ -391,57 +393,113 @@ export default function App() {
           <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded animate-pulse">
             <p className="font-bold">⚠️ Error del Sistema</p>
             <p className="text-sm">{error}</p>
-            <button 
-              onClick={() => setError(null)} 
-              className="text-xs underline mt-2 hover:text-red-900"
-            >
-              Cerrar
-            </button>
+            <button onClick={() => setError(null)} className="text-xs underline mt-2">Cerrar</button>
           </div>
         )}
 
-        {/* DASHBOARD */}
+        {/* DASHBOARD CON INTELIGENCIA */}
         {activeTab === "dashboard" && (
           <div className="animate-in fade-in duration-500 space-y-6">
-            <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <div className="bg-slate-500 p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-slate-700 shadow-xl opacity-90">
-                  <h2 className="text-sm font-black uppercase opacity-60 mb-2 italic">Enero 2026 - Archivo Completo</h2>
-                  <div className="flex justify-between items-end">
-                    <div>
-                      <p className="text-4xl font-black italic">${ENERO_STATS.totalRevenue.toFixed(2)}</p>
-                      <p className="text-[8px] font-bold uppercase tracking-widest">31 días • {ENERO_STATS.totalViews}M views</p>
+            
+            {/* SECCIÓN: UN DÍA COMO HOY + COMPARATIVA */}
+            {onThisDayJanuary && (
+              <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Tarjeta: Un día como hoy en Enero */}
+                <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-orange-800 shadow-xl relative overflow-hidden">
+                  <div className="absolute top-0 right-0 bg-white/20 px-4 py-2 rounded-bl-2xl font-black text-xs uppercase">
+                    📅 Un día como hoy
+                  </div>
+                  <h2 className="text-sm font-black uppercase opacity-80 mb-2 italic mt-4">
+                    8 de Enero 2026 (Histórico)
+                  </h2>
+                  <p className="text-2xl font-black uppercase mb-3 truncate">{onThisDayJanuary.topic}</p>
+                  
+                  <div className="grid grid-cols-3 gap-3 mb-4">
+                    <div className="bg-white/10 p-3 rounded-xl text-center">
+                      <p className="text-2xl font-black">${onThisDayJanuary.revenue}</p>
+                      <p className="text-[8px] uppercase opacity-70">Revenue</p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-[10px] font-black bg-white/10 px-3 py-1 rounded-full mb-1">PROM: ${ENERO_STATS.avgDailyRevenue}/día</p>
-                      <p className="text-[8px] opacity-70">Mejor: Día {ENERO_STATS.bestDay.day} (${ENERO_STATS.bestDay.revenue})</p>
+                    <div className="bg-white/10 p-3 rounded-xl text-center">
+                      <p className="text-2xl font-black">{onThisDayJanuary.views}M</p>
+                      <p className="text-[8px] uppercase opacity-70">Views</p>
+                    </div>
+                    <div className="bg-white/10 p-3 rounded-xl text-center">
+                      <p className="text-2xl font-black">{onThisDayJanuary.interactions}K</p>
+                      <p className="text-[8px] uppercase opacity-70">Interac.</p>
                     </div>
                   </div>
-               </div>
-               
-               <div className="bg-[#003566] p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-blue-900 shadow-xl relative overflow-hidden">
-                  <div 
-                    className="absolute bottom-0 left-0 h-1 bg-green-400 transition-all duration-500"
-                    style={{ width: `${progressPercent}%` }}
-                  />
-                  <h2 className="text-sm font-black uppercase opacity-60 mb-2 italic">Febrero Actual</h2>
-                  <div className="flex justify-between items-end">
-                    <div>
-                      <p className="text-4xl font-black italic text-blue-400">${totalRevenue.toFixed(2)}</p>
-                      <p className="text-[8px] font-bold uppercase tracking-widest">
-                        Progreso Meta $1,250 ({progressPercent.toFixed(1)}%)
+
+                  {/* Indicador de rendimiento */}
+                  {todayFebData ? (
+                    <div className={`p-3 rounded-xl ${todayFebData.revenue >= onThisDayJanuary.revenue ? 'bg-green-500/30' : 'bg-red-500/30'}`}>
+                      <p className="text-xs font-bold uppercase flex items-center gap-2">
+                        {todayFebData.revenue >= onThisDayJanuary.revenue ? '✅ SUPERADO' : '⚠️ POR DEBAJO'}
+                        <span className="text-lg">
+                          Hoy: ${todayFebData.revenue} vs ${onThisDayJanuary.revenue}
+                        </span>
                       </p>
                     </div>
-                    <div className="text-[10px] font-black bg-blue-500 px-3 py-1 rounded-full animate-pulse tracking-tighter">
-                      OPERATIVO
+                  ) : (
+                    <div className="bg-white/10 p-3 rounded-xl">
+                      <p className="text-xs font-bold uppercase">📝 Sin publicación hoy aún</p>
+                      <p className="text-[10px] opacity-70">Meta sugerida: Superar ${onThisDayJanuary.revenue}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Tarjeta: Tu ritmo vs Enero */}
+                <div className="bg-gradient-to-br from-blue-600 to-indigo-800 p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-blue-900 shadow-xl">
+                  <h2 className="text-sm font-black uppercase opacity-60 mb-2 italic">
+                    🎯 Tu Ritmo vs Enero
+                  </h2>
+                  
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center bg-white/10 p-3 rounded-xl">
+                      <span className="text-xs uppercase opacity-70">Promedio diario Feb</span>
+                      <span className="text-2xl font-black">${(totalRevenue / Math.max(currentDay - 1, 1)).toFixed(2)}</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center bg-white/10 p-3 rounded-xl">
+                      <span className="text-xs uppercase opacity-70">Promedio diario Ene</span>
+                      <span className="text-2xl font-black">${ENERO_STATS.avgDailyRevenue}</span>
+                    </div>
+
+                    <div className={`p-4 rounded-xl text-center ${comparisonStats.vsEneroPercent >= 0 ? 'bg-green-500/30' : 'bg-red-500/30'}`}>
+                      <p className="text-xs uppercase opacity-70 mb-1">Diferencia</p>
+                      <p className="text-3xl font-black">
+                        {comparisonStats.vsEneroPercent >= 0 ? '+' : ''}{comparisonStats.vsEneroPercent.toFixed(1)}%
+                      </p>
+                      <p className="text-[10px] mt-1">
+                        {comparisonStats.vsEneroPercent >= 0 ? '🚀 Vas mejor que enero' : '📉 Necesitas acelerar'}
+                      </p>
                     </div>
                   </div>
-                  <p className="text-[10px] mt-2 opacity-80">
-                    Meta diaria restante: ${dailyTarget.toFixed(2)}
-                  </p>
-               </div>
+                </div>
+              </section>
+            )}
+
+            {/* SECCIÓN: PROYECCIONES Y METAS */}
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-[#003566] p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-blue-900 shadow-xl">
+                <h3 className="text-[10px] font-black uppercase opacity-60 mb-2">Proyección Febrero</h3>
+                <p className="text-4xl font-black italic text-blue-400">${comparisonStats.projectedTotal.toFixed(2)}</p>
+                <p className="text-[8px] uppercase opacity-70 mt-1">Si mantienes este ritmo</p>
+              </div>
+              
+              <div className="bg-slate-600 p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-slate-800 shadow-xl">
+                <h3 className="text-[10px] font-black uppercase opacity-60 mb-2">Meta para igualar Enero</h3>
+                <p className="text-4xl font-black italic">${ENERO_STATS.totalRevenue.toFixed(2)}</p>
+                <p className="text-[8px] uppercase opacity-70 mt-1">Necesitas ${(ENERO_STATS.totalRevenue - totalRevenue).toFixed(2)} más</p>
+              </div>
+
+              <div className="bg-emerald-600 p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-emerald-800 shadow-xl">
+                <h3 className="text-[10px] font-black uppercase opacity-60 mb-2">Meta Diaria Hoy</h3>
+                <p className="text-4xl font-black italic">${dailyTarget.toFixed(2)}</p>
+                <p className="text-[8px] uppercase opacity-70 mt-1">Para llegar a $1,250</p>
+              </div>
             </section>
 
-            {/* FORMULARIO CON SELECTOR DE UNIDADES */}
+            {/* FORMULARIO */}
             <section className={`p-4 md:p-8 rounded-xl md:rounded-[40px] shadow-xl border-4 transition-colors ${
               editingId ? 'bg-blue-50 border-blue-500' : 'bg-white border-slate-300'
             }`}>
@@ -450,11 +508,8 @@ export default function App() {
                   {editingId ? "⚡ EDITANDO REGISTRO" : "📝 NUEVO REGISTRO"}
                 </h3>
                 {editingId && (
-                  <button 
-                    onClick={handleCancelEdit}
-                    className="text-[10px] text-red-500 hover:text-red-700 font-bold uppercase px-3 py-1 bg-red-50 rounded-lg"
-                  >
-                    ✕ Cancelar Edición
+                  <button onClick={handleCancelEdit} className="text-[10px] text-red-500 font-bold uppercase px-3 py-1 bg-red-50 rounded-lg">
+                    ✕ Cancelar
                   </button>
                 )}
               </div>
@@ -466,15 +521,11 @@ export default function App() {
                     type="date" 
                     value={formData.date} 
                     onChange={e => setFormData({...formData, date: e.target.value})} 
-                    className={`w-full p-2 md:p-4 rounded-xl border-2 font-bold ${
-                      formErrors.date ? 'border-red-500 bg-red-50' : 'border-slate-200'
-                    }`}
+                    className="w-full p-2 md:p-4 rounded-xl border-2 font-bold border-slate-200"
                     required
                   />
-                  {formErrors.date && <p className="text-[10px] text-red-500 font-bold">{formErrors.date}</p>}
                 </div>
                 
-                {/* NUEVO: Visualizaciones con selector de unidades */}
                 <div className="space-y-1 md:col-span-2">
                   <label className="text-[10px] font-bold text-slate-500 uppercase">Visualizaciones</label>
                   <div className="flex gap-2">
@@ -485,25 +536,19 @@ export default function App() {
                       min="0"
                       value={viewInput} 
                       onChange={e => setViewInput(e.target.value)} 
-                      className={`flex-1 p-2 md:p-4 rounded-xl border-2 font-bold ${
-                        formErrors.views ? 'border-red-500 bg-red-50' : 'border-slate-200'
-                      }`}
+                      className="flex-1 p-2 md:p-4 rounded-xl border-2 font-bold border-slate-200"
                       required
                     />
                     <select 
                       value={viewUnit} 
                       onChange={e => setViewUnit(Number(e.target.value))}
                       className="p-2 md:p-4 rounded-xl border-2 font-bold border-slate-200 bg-slate-50 text-xs"
-                      title="Selecciona la unidad"
                     >
                       {VIEW_UNITS.map(unit => (
-                        <option key={unit.value} value={unit.value}>
-                          {unit.label}
-                        </option>
+                        <option key={unit.value} value={unit.value}>{unit.label}</option>
                       ))}
                     </select>
                   </div>
-                  {formErrors.views && <p className="text-[10px] text-red-500 font-bold">{formErrors.views}</p>}
                   {viewInput && (
                     <p className="text-[10px] text-slate-500">
                       = {parseFloat(viewInput * viewUnit).toLocaleString()} visualizaciones totales
@@ -520,27 +565,21 @@ export default function App() {
                     min="0"
                     value={formData.revenue} 
                     onChange={e => setFormData({...formData, revenue: e.target.value})} 
-                    className={`w-full p-2 md:p-4 rounded-xl border-2 font-black text-green-700 bg-green-50 ${
-                      formErrors.revenue ? 'border-red-500' : 'border-slate-200'
-                    }`}
+                    className="w-full p-2 md:p-4 rounded-xl border-2 font-black text-green-700 bg-green-50 border-slate-200"
                     required
                   />
-                  {formErrors.revenue && <p className="text-[10px] text-red-500 font-bold">{formErrors.revenue}</p>}
                 </div>
                 
                 <div className="md:col-span-2 space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">Titular / Topic</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase">Titular</label>
                   <input 
                     placeholder="TITULAR LLAMATIVO" 
                     value={formData.topic} 
                     onChange={e => setFormData({...formData, topic: e.target.value})} 
-                    className={`w-full p-2 md:p-4 rounded-xl border-2 font-bold uppercase ${
-                      formErrors.topic ? 'border-red-500 bg-red-50' : 'border-slate-200'
-                    }`}
+                    className="w-full p-2 md:p-4 rounded-xl border-2 font-bold uppercase border-slate-200"
                     maxLength={100}
                     required
                   />
-                  {formErrors.topic && <p className="text-[10px] text-red-500 font-bold">{formErrors.topic}</p>}
                 </div>
                 
                 <div className="space-y-1">
@@ -563,19 +602,16 @@ export default function App() {
                       placeholder="Opcional" 
                       type="number" 
                       step="0.1" 
-                      min="0"
                       value={formData.interactions} 
                       onChange={e => setFormData({...formData, interactions: e.target.value})} 
                       className="w-full p-2 md:p-4 rounded-xl border-2 font-bold border-slate-200"
                     />
                   </div>
-                  
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-500 uppercase">Followers</label>
                     <input 
                       placeholder="Opcional" 
                       type="number" 
-                      min="0"
                       value={formData.followers} 
                       onChange={e => setFormData({...formData, followers: e.target.value})} 
                       className="w-full p-2 md:p-4 rounded-xl border-2 font-bold border-slate-200"
@@ -586,54 +622,34 @@ export default function App() {
                 <button 
                   type="submit" 
                   disabled={isSubmitting}
-                  className="md:col-span-3 bg-[#003566] text-white p-3 md:p-5 rounded-xl md:rounded-[35px] font-black text-base md:text-xl shadow-xl italic uppercase disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-800 transition-colors"
+                  className="md:col-span-3 bg-[#003566] text-white p-3 md:p-5 rounded-xl font-black text-xl shadow-xl italic uppercase disabled:opacity-50 hover:bg-blue-800"
                 >
-                  {isSubmitting ? "SINCRONIZANDO..." : editingId ? "💾 ACTUALIZAR REGISTRO" : "🚀 SINCRONIZAR IMPERIO"}
+                  {isSubmitting ? "SINCRONIZANDO..." : editingId ? "💾 ACTUALIZAR" : "🚀 SINCRONIZAR"}
                 </button>
               </form>
             </section>
 
             {/* BITÁCORA FEBRERO */}
-            <section className="bg-white rounded-xl md:rounded-[40px] p-4 md:p-8 border-2 border-slate-300 shadow-xl overflow-x-auto no-scrollbar">
+            <section className="bg-white rounded-xl md:rounded-[40px] p-4 md:p-8 border-2 border-slate-300 shadow-xl">
               <h2 className="text-xl md:text-3xl font-black text-[#003566] uppercase italic mb-4">
-                Operaciones Febrero {loading && <span className="text-sm animate-pulse">(Cargando...)</span>}
+                Operaciones Febrero
               </h2>
-              
-              {febData.length === 0 && !loading ? (
-                <p className="text-center text-slate-400 font-bold py-8">No hay registros para febrero</p>
+              {febData.length === 0 ? (
+                <p className="text-center text-slate-400 font-bold py-8">No hay registros</p>
               ) : (
-                <div className="min-w-[500px] space-y-2">
+                <div className="space-y-2">
                   {febData.map(item => (
-                    <div 
-                      key={item.id} 
-                      className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-200 hover:bg-blue-50 transition-colors group"
-                    >
+                    <div key={item.id} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border hover:bg-blue-50">
                       <div className="flex-1 cursor-pointer" onClick={() => handleEdit(item)}>
-                        <p className="font-black text-[#003566] text-sm uppercase truncate pr-4">
-                          {item.topic || "SIN TÍTULO"}
-                        </p>
-                        <p className="text-[8px] font-bold text-slate-400">
-                          {(item.date || "").split("-").reverse().slice(0,2).join("/")} • {formatViews(item.views)} VISTAS • {item.format}
+                        <p className="font-black text-[#003566] text-sm uppercase">{item.topic}</p>
+                        <p className="text-[8px] text-slate-400">
+                          {item.date} • {formatViews(item.views)} views • {item.format}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <p className="font-black text-green-600 text-xl md:text-3xl">
-                          ${Number(item.revenue || 0).toFixed(2)}
-                        </p>
-                        <button 
-                          onClick={() => handleEdit(item)}
-                          className="text-blue-400 hover:text-blue-600 text-lg p-2 hover:bg-blue-100 rounded-full transition-colors"
-                          title="Editar"
-                        >
-                          ✏️
-                        </button>
-                        <button 
-                          onClick={() => deleteRow(item.id)} 
-                          className="text-red-300 hover:text-red-600 text-lg p-2 hover:bg-red-50 rounded-full transition-colors"
-                          title="Eliminar"
-                        >
-                          🗑️
-                        </button>
+                        <p className="font-black text-green-600 text-2xl">${Number(item.revenue).toFixed(2)}</p>
+                        <button onClick={() => handleEdit(item)} className="text-blue-400 hover:bg-blue-100 p-2 rounded-full">✏️</button>
+                        <button onClick={() => deleteRow(item.id)} className="text-red-300 hover:bg-red-50 p-2 rounded-full">🗑️</button>
                       </div>
                     </div>
                   ))}
@@ -643,199 +659,229 @@ export default function App() {
           </div>
         )}
 
-        {/* BUSCADOR POR FECHA */}
-        {activeTab === "buscar" && (
+        {/* NUEVA PESTAÑA: INTELIGENCIA Y PROYECCIONES DETALLADAS */}
+        {activeTab === "intel" && (
           <div className="animate-in fade-in duration-500 space-y-6">
-            <section className="bg-white p-6 md:p-8 rounded-xl md:rounded-[40px] border-2 border-slate-300 shadow-xl">
-              <h2 className="text-2xl md:text-3xl font-black text-[#003566] uppercase italic mb-6">
-                🔍 Consulta por Fecha
-              </h2>
-              
+            <h2 className="text-3xl font-black text-[#003566] uppercase italic">🧠 Centro de Inteligencia</h2>
+            
+            {/* Análisis comparativo detallado */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <section className="bg-white p-6 rounded-xl md:rounded-[40px] border-2 border-slate-300 shadow-xl">
+                <h3 className="text-lg font-black text-[#003566] uppercase italic mb-4">📊 Comparativa Mensual</h3>
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-100 font-bold uppercase text-xs text-slate-500">
+                    <tr>
+                      <th className="p-3 text-left">Métrica</th>
+                      <th className="p-3 text-right">Enero</th>
+                      <th className="p-3 text-right">Febrero</th>
+                      <th className="p-3 text-right">Dif.</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    <tr>
+                      <td className="p-3 font-bold">Total Revenue</td>
+                      <td className="p-3 text-right">${ENERO_STATS.totalRevenue.toFixed(2)}</td>
+                      <td className="p-3 text-right font-black text-blue-600">${totalRevenue.toFixed(2)}</td>
+                      <td className={`p-3 text-right font-bold ${totalRevenue >= ENERO_STATS.totalRevenue ? 'text-green-600' : 'text-red-500'}`}>
+                        {totalRevenue >= ENERO_STATS.totalRevenue ? '+' : ''}${(totalRevenue - ENERO_STATS.totalRevenue).toFixed(2)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-bold">Promedio Diario</td>
+                      <td className="p-3 text-right">${ENERO_STATS.avgDailyRevenue}</td>
+                      <td className="p-3 text-right font-black text-blue-600">
+                        ${(totalRevenue / Math.max(currentDay - 1, 1)).toFixed(2)}
+                      </td>
+                      <td className={`p-3 text-right font-bold ${comparisonStats.vsEneroPercent >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                        {comparisonStats.vsEneroPercent >= 0 ? '+' : ''}{comparisonStats.vsEneroPercent.toFixed(1)}%
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-bold">Mejor Día</td>
+                      <td className="p-3 text-right">${ENERO_STATS.bestDay.revenue}</td>
+                      <td className="p-3 text-right">
+                        {febData.length > 0 ? `$${Math.max(...febData.map(d => d.revenue)).toFixed(2)}` : '-'}
+                      </td>
+                      <td className="p-3 text-right">-</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+
+              <section className="bg-gradient-to-br from-slate-700 to-slate-900 p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-slate-950 shadow-xl">
+                <h3 className="text-lg font-black uppercase italic mb-4">🎯 Fórmulas y Recomendaciones</h3>
+                <div className="space-y-4">
+                  <div className="bg-white/10 p-4 rounded-xl">
+                    <p className="text-xs uppercase opacity-70 mb-1">Para superar enero necesitas</p>
+                    <p className="text-2xl font-black text-green-400">
+                      ${(ENERO_STATS.totalRevenue - totalRevenue).toFixed(2)} más
+                    </p>
+                    <p className="text-[10px] opacity-70 mt-1">
+                      Es decir, ${((ENERO_STATS.totalRevenue - totalRevenue) / (28 - currentDay + 1)).toFixed(2)} por día restante
+                    </p>
+                  </div>
+
+                  <div className="bg-white/10 p-4 rounded-xl">
+                    <p className="text-xs uppercase opacity-70 mb-1">Tu ritmo actual proyecta</p>
+                    <p className="text-2xl font-black text-blue-400">
+                      ${comparisonStats.projectedTotal.toFixed(2)}
+                    </p>
+                    <p className="text-[10px] opacity-70 mt-1">
+                      {comparisonStats.projectedTotal > ENERO_STATS.totalRevenue 
+                        ? '🚀 Superarás enero si mantienes este ritmo' 
+                        : '📉 Necesitas acelerar para superar enero'}
+                    </p>
+                  </div>
+
+                  <div className="bg-white/10 p-4 rounded-xl">
+                    <p className="text-xs uppercase opacity-70 mb-1">RPM Promedio Febrero</p>
+                    <p className="text-2xl font-black text-amber-400">
+                      ${totalRevenue > 0 && febData.reduce((sum, item) => sum + (item.views || 0), 0) > 0 
+                        ? ((totalRevenue / febData.reduce((sum, item) => sum + (item.views || 0), 0)) * 1000000).toFixed(2) 
+                        : '0.00'}
+                    </p>
+                    <p className="text-[10px] opacity-70 mt-1">Revenue por 1000 views</p>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            {/* Calendario de publicaciones comparativo */}
+            <section className="bg-white p-6 rounded-xl md:rounded-[40px] border-2 border-slate-300 shadow-xl">
+              <h3 className="text-lg font-black text-[#003566] uppercase italic mb-4">
+                📅 Comparativa Día por Día (Enero vs Febrero)
+              </h3>
+              <div className="grid grid-cols-7 md:grid-cols-7 gap-2">
+                {Array.from({ length: 28 }, (_, i) => i + 1).map(day => {
+                  const eneroDay = ENERO_DATA.find(d => d.day === day);
+                  const febDay = febData.find(d => new Date(d.date).getDate() === day);
+                  
+                  return (
+                    <div 
+                      key={day} 
+                      className={`p-3 rounded-xl text-center border-2 ${
+                        day === currentDay 
+                          ? 'bg-blue-100 border-blue-500 ring-2 ring-blue-300' 
+                          : 'bg-slate-50 border-slate-200'
+                      }`}
+                    >
+                      <p className="text-xs font-bold text-slate-400 mb-1">{day} Feb</p>
+                      {febDay ? (
+                        <p className="text-lg font-black text-green-600">${febDay.revenue}</p>
+                      ) : (
+                        <p className="text-lg text-slate-300">-</p>
+                      )}
+                      {eneroDay && (
+                        <p className="text-[10px] text-slate-400 mt-1 border-t pt-1">
+                          Ene: ${eneroDay.revenue}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-center text-xs text-slate-400 mt-4">
+                💡 Click en Dashboard para ver "Un día como hoy" con análisis detallado
+              </p>
+            </section>
+          </div>
+        )}
+
+        {/* BUSCADOR */}
+        {activeTab === "buscar" && (
+          <div className="space-y-6">
+            <section className="bg-white p-6 rounded-xl border-2 border-slate-300 shadow-xl">
+              <h2 className="text-2xl font-black text-[#003566] uppercase italic mb-6">🔍 Consulta por Fecha</h2>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">Mes</label>
-                  <select 
-                    value={searchMonth} 
-                    onChange={e => setSearchMonth(e.target.value)}
-                    className="w-full p-3 rounded-xl border-2 font-bold border-slate-200"
-                  >
-                    <option value="febrero">📅 Febrero 2026 (Activo)</option>
-                    <option value="enero">📅 Enero 2026 (31 días)</option>
-                  </select>
-                </div>
-                
-                <div className="md:col-span-2 space-y-2">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">Fecha específica</label>
-                  <input 
-                    type="date" 
-                    value={searchDate} 
-                    onChange={e => setSearchDate(e.target.value)}
-                    className="w-full p-3 rounded-xl border-2 font-bold border-slate-200"
-                  />
-                </div>
-                
-                <div className="flex items-end">
-                  <button 
-                    onClick={handleSearch}
-                    disabled={!searchDate}
-                    className="w-full bg-[#003566] text-white p-3 rounded-xl font-black uppercase disabled:opacity-50 hover:bg-blue-800 transition-colors"
-                  >
-                    Buscar
-                  </button>
-                </div>
+                <select 
+                  value={searchMonth} 
+                  onChange={e => setSearchMonth(e.target.value)}
+                  className="p-3 rounded-xl border-2 font-bold border-slate-200"
+                >
+                  <option value="febrero">📅 Febrero 2026</option>
+                  <option value="enero">📅 Enero 2026</option>
+                </select>
+                <input 
+                  type="date" 
+                  value={searchDate} 
+                  onChange={e => setSearchDate(e.target.value)}
+                  className="md:col-span-2 p-3 rounded-xl border-2 font-bold border-slate-200"
+                />
+                <button 
+                  onClick={handleSearch}
+                  disabled={!searchDate}
+                  className="bg-[#003566] text-white p-3 rounded-xl font-black uppercase disabled:opacity-50"
+                >
+                  Buscar
+                </button>
               </div>
 
               {searchResults.length > 0 ? (
                 <div className="space-y-3">
-                  <h3 className="text-sm font-black text-slate-500 uppercase mb-3">
-                    Resultados encontrados ({searchResults.length})
-                  </h3>
                   {searchResults.map(item => (
-                    <div 
-                      key={item.id} 
-                      className={`p-4 rounded-2xl border-2 ${
-                        searchMonth === "enero" 
-                          ? "bg-slate-100 border-slate-300" 
-                          : "bg-blue-50 border-blue-200"
-                      }`}
-                    >
+                    <div key={item.id} className="p-4 bg-blue-50 rounded-2xl border-2 border-blue-200">
                       <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <p className="font-black text-[#003566] text-lg uppercase mb-2">
-                            {item.topic}
-                          </p>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-[10px] font-bold text-slate-600">
-                            <span className="bg-white px-2 py-1 rounded">📅 {item.date}</span>
-                            <span className="bg-white px-2 py-1 rounded">👁️ {formatViews(item.views)} views</span>
-                            <span className="bg-white px-2 py-1 rounded">💰 ${item.revenue}</span>
-                            <span className="bg-white px-2 py-1 rounded">📝 {item.format}</span>
-                            {item.interactions && <span className="bg-white px-2 py-1 rounded">👍 {item.interactions}K interac.</span>}
-                            {item.followers && <span className="bg-white px-2 py-1 rounded">👥 {item.followers} followers</span>}
-                          </div>
+                        <div>
+                          <p className="font-black text-lg uppercase">{item.topic}</p>
+                          <p className="text-xs text-slate-500">{item.date} • {item.format}</p>
                         </div>
-                        <div className="text-right ml-4">
-                          <p className="text-3xl font-black text-green-600">
-                            ${Number(item.revenue).toFixed(2)}
-                          </p>
-                          {searchMonth === "febrero" && (
-                            <button 
-                              onClick={() => handleEdit(item)}
-                              className="mt-2 text-xs bg-blue-500 text-white px-3 py-1 rounded-lg font-bold uppercase hover:bg-blue-600"
-                            >
-                              ✏️ Editar
-                            </button>
-                          )}
-                        </div>
+                        <p className="text-3xl font-black text-green-600">${Number(item.revenue).toFixed(2)}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : searchDate ? (
-                <div className="text-center py-12 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300">
-                  <p className="text-4xl mb-2">🔍</p>
-                  <p className="font-black text-slate-400 uppercase">No hay publicaciones para esta fecha</p>
-                  <p className="text-xs text-slate-400 mt-1">{searchDate}</p>
-                </div>
-              ) : (
-                <div className="text-center py-12 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300">
-                  <p className="text-4xl mb-2">📅</p>
-                  <p className="font-black text-slate-400 uppercase">Selecciona una fecha para buscar</p>
-                </div>
-              )}
-            </section>
-
-            <section className="bg-white p-6 rounded-xl md:rounded-[40px] border-2 border-slate-300 shadow-xl">
-              <h3 className="text-lg font-black text-[#003566] uppercase italic mb-4">
-                📊 Fechas con publicaciones - {searchMonth === "enero" ? "Enero" : "Febrero"} 2026
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {(searchMonth === "enero" ? ENERO_DATA : febData).map(item => (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      setSearchDate(item.date);
-                      setSearchResults([item]);
-                    }}
-                    className={`px-3 py-2 rounded-xl font-bold text-xs uppercase transition ${
-                      searchDate === item.date
-                        ? "bg-[#003566] text-white"
-                        : "bg-slate-100 text-slate-600 hover:bg-blue-100"
-                    }`}
-                  >
-                    {item.date.split("-")[2]}/{item.date.split("-")[1]}
-                    <span className="block text-[8px] opacity-70">${item.revenue}</span>
-                  </button>
-                ))}
-              </div>
+                <p className="text-center text-slate-400 py-8">No hay publicaciones para esta fecha</p>
+              ) : null}
             </section>
           </div>
         )}
 
-        {/* HISTÓRICO ENERO */}
+        {/* HISTÓRICO */}
         {activeTab === "historico" && (
           <div className="space-y-6">
-            <section className="bg-slate-500 p-6 rounded-xl md:rounded-[40px] text-white border-b-8 border-slate-700 shadow-xl">
+            <section className="bg-slate-500 p-6 rounded-xl text-white border-b-8 border-slate-700 shadow-xl">
               <h2 className="text-2xl font-black uppercase italic mb-4">Resumen Enero 2026</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-white/10 p-4 rounded-xl">
-                  <p className="text-[10px] uppercase opacity-70">Total Ingresos</p>
+                  <p className="text-[10px] uppercase opacity-70">Total</p>
                   <p className="text-2xl font-black">${ENERO_STATS.totalRevenue.toFixed(2)}</p>
                 </div>
                 <div className="bg-white/10 p-4 rounded-xl">
-                  <p className="text-[10px] uppercase opacity-70">Visualizaciones</p>
+                  <p className="text-[10px] uppercase opacity-70">Views</p>
                   <p className="text-2xl font-black">{ENERO_STATS.totalViews}M</p>
                 </div>
                 <div className="bg-white/10 p-4 rounded-xl">
-                  <p className="text-[10px] uppercase opacity-70">Promedio Diario</p>
+                  <p className="text-[10px] uppercase opacity-70">Promedio</p>
                   <p className="text-2xl font-black">${ENERO_STATS.avgDailyRevenue}</p>
                 </div>
                 <div className="bg-white/10 p-4 rounded-xl">
                   <p className="text-[10px] uppercase opacity-70">Mejor Día</p>
                   <p className="text-2xl font-black">Día {ENERO_STATS.bestDay.day}</p>
-                  <p className="text-[10px]">${ENERO_STATS.bestDay.revenue}</p>
                 </div>
               </div>
             </section>
 
-            <section className="bg-white rounded-xl md:rounded-[40px] p-4 md:p-8 border-2 border-slate-300 overflow-x-auto">
-              <h2 className="text-xl md:text-2xl font-black text-slate-400 uppercase italic mb-6">
-                Archivo Completo - Enero 2026 (31 días)
-              </h2>
+            <section className="bg-white rounded-xl p-4 border-2 border-slate-300 overflow-x-auto">
               <table className="w-full text-left min-w-[600px]">
                 <thead className="bg-slate-100 text-[10px] font-black uppercase text-slate-500">
                   <tr>
                     <th className="p-3">Día</th>
-                    <th className="p-3">Fecha</th>
                     <th className="p-3">Titular</th>
                     <th className="p-3 text-right">Views</th>
-                    <th className="p-3 text-right">Caja</th>
-                    <th className="p-3 text-right">Interac.</th>
-                    <th className="p-3 text-right">Followers</th>
+                    <th className="p-3 text-right">Revenue</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y-2">
                   {ENERO_DATA.map(i => (
-                    <tr key={i.id} className="grayscale opacity-70 hover:opacity-100 transition-opacity">
+                    <tr key={i.id} className="grayscale opacity-70 hover:opacity-100">
                       <td className="p-3 font-bold">{i.day}</td>
-                      <td className="p-3 text-xs">{i.date}</td>
-                      <td className="p-3 font-black uppercase text-xs max-w-[200px] truncate">{i.topic}</td>
-                      <td className="p-3 text-right font-bold">{i.views}M</td>
+                      <td className="p-3 font-black uppercase text-xs">{i.topic}</td>
+                      <td className="p-3 text-right">{i.views}M</td>
                       <td className="p-3 text-right font-black text-green-600">${i.revenue.toFixed(2)}</td>
-                      <td className="p-3 text-right text-xs">{i.interactions}K</td>
-                      <td className="p-3 text-right text-xs">{i.followers}</td>
                     </tr>
                   ))}
                 </tbody>
-                <tfoot className="bg-slate-200 font-black text-xs uppercase">
-                  <tr>
-                    <td className="p-3" colSpan="4">TOTAL ENERO</td>
-                    <td className="p-3 text-right text-green-700 text-lg">
-                      ${ENERO_STATS.totalRevenue.toFixed(2)}
-                    </td>
-                    <td className="p-3 text-right">{ENERO_STATS.totalInteractions}K</td>
-                    <td className="p-3 text-right">Max: {ENERO_STATS.totalFollowers}</td>
-                  </tr>
-                </tfoot>
               </table>
             </section>
           </div>
